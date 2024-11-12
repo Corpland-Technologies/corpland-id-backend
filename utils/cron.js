@@ -5,7 +5,7 @@ const cron = require("node-cron");
 module.exports.rewardRider = async () => {
   // cron.schedule('*/5 * * * *', async () => {
   cron.schedule("0 0 * * *", async () => {
-    console.log("Running rewardRiders function...");
+    // console.log("Running rewardRiders function...");
     // await  TripsService.rewardRiders();
   });
 };
