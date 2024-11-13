@@ -8,7 +8,7 @@ const {
 } = require("./device.controller");
 
 //authenticated routes go below here
-deviceRoute.use(isAuthenticated);
+// deviceRoute.use(isAuthenticated);
 
 deviceRoute.post("/", createDeviceController);
 deviceRoute.get("/", getDeviceController);

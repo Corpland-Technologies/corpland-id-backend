@@ -50,18 +50,6 @@ const deleteDeviceController = async (req, res, next) => {
   return responseHandler(res, SUCCESS, data);
 };
 
-const assignDeviceController = async (req, res, next) => {
-  const [error, data] = await manageAsyncOps(
-    DeviceService.assignDevice(req.body, req.params.id)
-  );
-
-  if (error) return next(error);
-
-  if (!data.success) return next(new CustomError(data.msg, BAD_REQUEST, data));
-
-  return responseHandler(res, SUCCESS, data);
-};
-
 module.exports = {
   createDeviceController,
   getDeviceController,
