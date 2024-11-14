@@ -6,10 +6,11 @@ const helmet = require("helmet")
 const compression = require("compression")
 const emailValidation = require("./emailCheck")
 const routes = require("./routes")
-
+const bodyParser = require("body-parser")
 const app = express()
 
 const application = () => {
+  app.use(bodyParser.json())
   app.use(express.json())
   app.use(express.urlencoded({ extended: false }))
   app.use(helmet())
