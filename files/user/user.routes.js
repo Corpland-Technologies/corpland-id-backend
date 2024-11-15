@@ -1,0 +1,34 @@
+const userRoute = require("express").Router();
+const { isAuthenticated } = require("../../utils/index");
+const { uploadManager } = require("../../utils/multer");
+const {
+  updateUserController,
+  changeUserPasswordController,
+  imageUpload,
+  getUserController,
+  getLoggedInUserController,
+  deleteUserController,
+  userSignUpController,
+  userLogin,
+  searchUserController,
+} = require("./user.controller");
+
+const { checkSchema } = require("express-validator");
+const { createUser } = require("../../validations/user/user");
+const { validate } = require("../../validations/validate");
+
+userRoute.route("/").post(validate(checkSchema(createUser)), userSignUpController);
+userRoute.post("/login", userLogin);
+
+userRoute.use(isAuthenticated);
+
+// Routes
+userRoute.get("/search", searchUserController);
+userRoute.put("/update/:id", updateUserController);
+userRoute.put("/password", changeUserPasswordController);
+userRoute.get("/", getUserController);
+userRoute.get("/me", getLoggedInUserController);
+userRoute.put("/delete/:id", deleteUserController);
+userRoute.put("/image", uploadManager("image").single("image"), imageUpload);
+
+module.exports = userRoute;

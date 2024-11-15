@@ -49,7 +49,7 @@ class AuthService {
 
     // if (!otp.success) return { success: false, msg: AuthFailure.SEND_OTP }
 
-    const msgDetails = `Please use this otp ${otp.data} on the JenosWay Application. It expires in 30 minutes`
+    const msgDetails = `Please use this otp ${otp.data} on the Corpland Technologies Application. It expires in 30 minutes`
 
     let sendOtp
 
@@ -61,7 +61,7 @@ class AuthService {
       case "email":
         sendOtp = await sendMailNotification(
           userDetail,
-          `JenosWay Otp`,
+          `Corpland Technologies Otp`,
           { otp: otp.data },
           template
         )

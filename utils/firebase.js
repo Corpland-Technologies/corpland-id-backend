@@ -1,5 +1,5 @@
 const firebase = require("firebase-admin");
-const serviceAccount = require("../utils/jenos-way-firebase-adminsdk-m6jux-c3521d5bff.json");
+const serviceAccount = require("../utils/corpland-app-firebase-adminsdk-ahhbn-95bac649a4.json");
 
 firebase.initializeApp({
   credentials: firebase.credential.cert(serviceAccount),
