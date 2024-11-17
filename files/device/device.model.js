@@ -11,6 +11,10 @@ const DeviceSchema = new mongoose.Schema(
       required: true,
       enum: ["ios", "android"],
     },
+    deviceInfo: {
+      type: Object,
+      required: true,
+    },
     isDelete: {
       type: Boolean,
       default: false,
