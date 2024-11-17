@@ -3,7 +3,8 @@ const { User } = require("./user.model");
 
 class UserRepository {
   static async create(body) {
-    return User.create(body);
+    const newUser = new User(body);
+    return newUser.save();
   }
 
   static async fetchUser(body) {

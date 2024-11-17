@@ -50,7 +50,7 @@ class UserService {
     return {
       SUCCESS: true,
       msg: userMessages.USER_CREATED,
-      data: { ...signUp, ...token },
+      data: { signUp, ...token },
     };
   }
 
