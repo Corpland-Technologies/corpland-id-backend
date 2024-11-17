@@ -12,6 +12,8 @@ const { FORBIDDEN } = require("../../constants/statusCode");
 const { sendMailNotification } = require("../../utils/email");
 const { AuthMessages } = require("../auth/auth.messages");
 const { User } = require("./user.model");
+const { AuthService } = require("../auth/auth.service");
+const { RedisClient } = require("../../utils/redis");
 
 class UserService {
   static async userSignUpService(body) {
@@ -26,24 +28,30 @@ class UserService {
     const password = await hashPassword(body.password);
     const signUp = await UserRepository.create({ ...body, password });
 
-    const substitutional_parameters = {
-      email: body.email,
+    // Send verification OTP
+    const sendOtp = await AuthService.sendOtp({
+      type: "email",
+      userDetail: body.email,
+      template: "VERIFICATION",
       name: body.name,
-      password: body.password,
-    };
-    try {
-      await sendMailNotification(
-        body.email,
-        "User Creation",
-        substitutional_parameters,
-        "USER_CREATION",
-        true
-      );
-    } catch (error) {
-      console.log("sendgrid error", error);
+    });
+
+    if (!sendOtp.success) {
+      return { SUCCESS: false, msg: userMessages.USER_NOT_CREATED };
     }
 
-    return { SUCCESS: true, msg: userMessages.USER_CREATED, data: signUp };
+    const token = await tokenHandler({
+      name: signUp.name,
+      email: signUp.email,
+      _id: signUp._id,
+    });
+    signUp.password = undefined;
+
+    return {
+      SUCCESS: true,
+      msg: userMessages.USER_CREATED,
+      data: { ...signUp, ...token },
+    };
   }
 
   static async userLoginService(body) {
@@ -59,8 +67,7 @@ class UserService {
     }
 
     //confirm if user has been deleted
-    if (user.isDelete)
-      return { success: false, msg: userMessages.SOFTDELETE };
+    if (user.isDelete) return { success: false, msg: userMessages.SOFTDELETE };
 
     const passwordCheck = await verifyPassword(body.password, user.password);
 
@@ -72,7 +79,6 @@ class UserService {
       name: user.name,
       email: user.email,
       _id: user._id,
-      isUser: true,
     });
     user.password = undefined;
     return {
@@ -118,8 +124,7 @@ class UserService {
 
     const user = await UserRepository.updateUserById(
       { _id: new mongoose.Types.ObjectId(params.id) },
-      { $set: { ...body } },
-      
+      { $set: { ...body } }
     );
 
     if (!user) {
@@ -146,11 +151,8 @@ class UserService {
 
     if (!user) return { success: false, msg: AuthMessages.USER_NOT_FOUND };
 
-    const prevPasswordCheck = await verifyPassword(
-      prevPassword,
-      user.password
-    );
-    console.log('prev', prevPassword)
+    const prevPasswordCheck = await verifyPassword(prevPassword, user.password);
+    console.log("prev", prevPassword);
     if (!prevPasswordCheck)
       return { success: false, msg: AuthMessages.INCORRECT_PASSWORD };
 
@@ -169,7 +171,7 @@ class UserService {
         password,
       }
     );
-    console.log('pass', password)
+    console.log("pass", password);
 
     if (changePassword) {
       return {
@@ -199,8 +201,7 @@ class UserService {
       _id: new mongoose.Types.ObjectId(_id),
     });
     getUser.password = undefined;
-    if (!getUser)
-      return { SUCCESS: false, msg: userMessages.USER_NOT_FOUND };
+    if (!getUser) return { SUCCESS: false, msg: userMessages.USER_NOT_FOUND };
 
     return { SUCCESS: true, msg: userMessages.USER_FOUND, data: getUser };
   }
@@ -242,6 +243,32 @@ class UserService {
       return { SUCCESS: false, msg: userMessages.USER_NOT_FOUND, data: [] };
 
     return { SUCCESS: true, msg: userMessages.USER_FOUND, data: userData };
+  }
+
+  static async verifyEmail(payload) {
+    const { email, otp } = payload;
+
+    // Verify OTP
+    const verifyOtp = await AuthService.verifyOtp({ otp, userDetail: email });
+
+    if (!verifyOtp.success) {
+      return { SUCCESS: false, msg: userMessages.VERIFIED_EMAIL_FAILURE };
+    }
+
+    // Update user verification status
+    const user = await UserRepository.updateUserDetails(
+      { email },
+      { emailVerified: true }
+    );
+
+    if (!user) {
+      return { SUCCESS: false, msg: userMessages.USER_NOT_FOUND };
+    }
+
+    // Clear the OTP from Redis after successful verification
+    await RedisClient.deleteCache(`OTP:${email}`);
+
+    return { SUCCESS: true, msg: userMessages.VERIFIED_EMAIL };
   }
 }
 

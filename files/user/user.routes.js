@@ -11,14 +11,18 @@ const {
   userSignUpController,
   userLogin,
   searchUserController,
+  verifyEmailController,
 } = require("./user.controller");
 
 const { checkSchema } = require("express-validator");
 const { createUser } = require("../../validations/user/user");
 const { validate } = require("../../validations/validate");
 
-userRoute.route("/").post(validate(checkSchema(createUser)), userSignUpController);
+userRoute
+  .route("/")
+  .post(validate(checkSchema(createUser)), userSignUpController);
 userRoute.post("/login", userLogin);
+userRoute.post("/verify-email", verifyEmailController);
 
 userRoute.use(isAuthenticated);
 

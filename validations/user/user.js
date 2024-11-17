@@ -1,4 +1,4 @@
-const { User } = require("../../files/user/user.model")
+const { User } = require("../../files/user/user.model");
 
 const createUser = {
   name: {
@@ -17,9 +17,9 @@ const createUser = {
           email: v,
         }).then((user) => {
           if (user.length > 0) {
-            return Promise.reject("Email already in use")
+            return Promise.reject("Email already in use");
           }
-        })
+        });
       },
     },
   },
@@ -27,7 +27,6 @@ const createUser = {
     notEmpty: true,
     errorMessage: "Password cannot be empty",
   },
- 
-}
+};
 
-module.exports = { createUser }
+module.exports = { createUser };

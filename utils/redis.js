@@ -1,10 +1,10 @@
-const url = require("url")
-const Redis = require("ioredis")
-const { config } = require("../core/config")
+const url = require("url");
+const Redis = require("ioredis");
+const { config } = require("../core/config");
 
-let redis_uri = url.parse(config.REDIS_URL)
+let redis_uri = url.parse(config.REDIS_URL);
 
-let redis
+let redis;
 
 if (config.ENV === "HEROKU_PROD") {
   redis = new Redis({
@@ -17,21 +17,24 @@ if (config.ENV === "HEROKU_PROD") {
       requestCert: true,
       agent: false,
     },
-  })
+  });
 } else {
-  redis = new Redis(config.REDIS_URL)
+  redis = new Redis(config.REDIS_URL);
 }
-
 
 class RedisClient {
   static async setCache(payload) {
-    const { key, value, expiry = 60 * 30 } = payload
-    return redis.set(key, JSON.stringify(value), "EX", expiry) //expires in 30 minutes
+    const { key, value, expiry = 60 * 30 } = payload;
+    return redis.set(key, JSON.stringify(value), "EX", expiry); //expires in 30 minutes
   }
 
   static async getCache(key) {
-    return redis.get(key)
+    return redis.get(key);
+  }
+
+  static async deleteCache(key) {
+    return redis.del(key);
   }
 }
 
-module.exports = { redis, RedisClient }
+module.exports = { redis, RedisClient };

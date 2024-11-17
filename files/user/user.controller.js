@@ -18,7 +18,7 @@ const userLogin = async (req, res, next) => {
   const [error, data] = await manageAsyncOps(
     UserService.userLoginService(req.body)
   );
-  console.log('err', error)
+  console.log("err", error);
 
   if (error) return next(error);
 
@@ -54,7 +54,7 @@ const updateUserController = async (req, res, next) => {
   const [error, data] = await manageAsyncOps(
     UserService.updateUserService(req)
   );
-  console.log('err', error)
+  console.log("err", error);
 
   if (error) return next(error);
 
@@ -67,7 +67,7 @@ const changeUserPasswordController = async (req, res, next) => {
   const [error, data] = await manageAsyncOps(
     UserService.changePassword(req.body)
   );
-  console.log('error', error)
+  console.log("error", error);
   if (error) return console.log(error);
 
   if (!data.SUCCESS) return next(new CustomError(data.msg, 400, data));
@@ -100,11 +100,18 @@ const deleteUserController = async (req, res, next) => {
 };
 
 const searchUserController = async (req, res, next) => {
-  const [error, data] = await manageAsyncOps(
-    UserService.searchUser(req.query)
-  );
+  const [error, data] = await manageAsyncOps(UserService.searchUser(req.query));
 
   if (error) return console.log(error);
+
+  if (!data.SUCCESS) return next(new CustomError(data.msg, 400, data));
+
+  return responseHandler(res, 200, data);
+};
+
+const verifyEmailController = async (req, res, next) => {
+  const [error, data] = await manageAsyncOps(UserService.verifyEmail(req.body));
+  if (error) return next(error);
 
   if (!data.SUCCESS) return next(new CustomError(data.msg, 400, data));
 
@@ -121,4 +128,5 @@ module.exports = {
   getLoggedInUserController,
   deleteUserController,
   searchUserController,
+  verifyEmailController,
 };
