@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-const { User } = require("../user/user.model");
+const { User } = require("./user.model");
 
 class UserRepository {
   static async create(body) {
@@ -27,20 +27,20 @@ class UserRepository {
   }
 
   static async updateUserById(payload, update) {
-    return User.findOneAndUpdate(      
+    return User.findOneAndUpdate(
       {
         ...payload,
       },
       { ...update },
       { new: true, runValidators: true }
-       );
+    );
   }
 
   static async search(query) {
     return User.find({ name: { $regex: query.name, $options: "i" } });
   }
 
-   static async fetchUserByParams(payload) {
+  static async fetchUserByParams(payload) {
     const { limit, skip, sort, search, ...restOfPayload } = payload;
 
     let query = {};
