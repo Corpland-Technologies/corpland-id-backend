@@ -11,15 +11,15 @@ class DeviceService {
       });
 
       if (!device) {
-        return { success: false, msg: DeviceMessages.DEVICE_FAILURE };
+        return { success: false, message: DeviceMessages.DEVICE_FAILURE };
       }
 
-      return { success: true, msg: DeviceMessages.DEVICE_SUCCESS, device };
+      return { success: true, message: DeviceMessages.DEVICE_SUCCESS, device };
     } catch (error) {
       console.log("error", error);
       return {
         success: false,
-        msg: "An error occurred while creating the device.",
+        message: "An error occurred while creating the device.",
       };
     }
   }
@@ -28,7 +28,7 @@ class DeviceService {
     const devices = await DeviceRepository.fetchAllDevices();
     return {
       success: true,
-      msg: DeviceMessages.FETCH_SUCCESS,
+      message: DeviceMessages.FETCH_SUCCESS,
       data: devices,
       count: devices.length,
     };
@@ -40,7 +40,7 @@ class DeviceService {
       "createdAt",
       "Device"
     );
-    if (error) return { success: false, msg: error };
+    if (error) return { success: false, message: error };
 
     const devices = await DeviceRepository.fetchDeviceByParams({
       ...params,
@@ -54,13 +54,13 @@ class DeviceService {
     if (!devices.length)
       return {
         success: true,
-        msg: DeviceMessages.DEVICE_NOT_FOUND,
+        message: DeviceMessages.DEVICE_NOT_FOUND,
         data: [],
       };
 
     return {
       success: true,
-      msg: DeviceMessages.FETCH_SUCCESS,
+      message: DeviceMessages.FETCH_SUCCESS,
       data: devices,
       count: devices.length,
     };
@@ -74,11 +74,12 @@ class DeviceService {
       { ...payload }
     );
 
-    if (!device) return { success: false, msg: DeviceMessages.UPDATE_ERROR };
+    if (!device)
+      return { success: false, message: DeviceMessages.UPDATE_ERROR };
 
     return {
       success: true,
-      msg: DeviceMessages.UPDATE,
+      message: DeviceMessages.UPDATE,
     };
   }
 
@@ -87,11 +88,12 @@ class DeviceService {
       _id: new mongoose.Types.ObjectId(id),
     });
 
-    if (!device) return { success: false, msg: DeviceMessages.DELETE_ERROR };
+    if (!device)
+      return { success: false, message: DeviceMessages.DELETE_ERROR };
 
     return {
       success: true,
-      msg: DeviceMessages.DELETE,
+      message: DeviceMessages.DELETE,
     };
   }
 }

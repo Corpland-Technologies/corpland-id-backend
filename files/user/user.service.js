@@ -22,7 +22,7 @@ class UserService {
     });
 
     if (user) {
-      return { SUCCESS: false, msg: userMessages.USER_EXISTS };
+      return { SUCCESS: false, message: userMessages.USER_EXISTS };
     }
 
     const password = await hashPassword(body.password);
@@ -37,7 +37,7 @@ class UserService {
     });
 
     if (!sendOtp.success) {
-      return { SUCCESS: false, msg: userMessages.USER_NOT_CREATED };
+      return { SUCCESS: false, message: userMessages.USER_NOT_CREATED };
     }
 
     const token = await tokenHandler({
@@ -49,7 +49,7 @@ class UserService {
 
     return {
       SUCCESS: true,
-      msg: userMessages.USER_CREATED,
+      message: userMessages.USER_CREATED,
       data: { user: signUp, ...token },
     };
   }
@@ -62,17 +62,18 @@ class UserService {
     if (!user) {
       return {
         SUCCESS: false,
-        msg: AuthMessages.LOGIN_ERROR,
+        message: AuthMessages.LOGIN_ERROR,
       };
     }
 
     //confirm if user has been deleted
-    if (user.isDelete) return { success: false, msg: userMessages.SOFTDELETE };
+    if (user.isDelete)
+      return { success: false, message: userMessages.SOFTDELETE };
 
     const passwordCheck = await verifyPassword(body.password, user.password);
 
     if (!passwordCheck) {
-      return { SUCCESS: false, msg: userMessages.LOGIN_ERROR };
+      return { SUCCESS: false, message: userMessages.LOGIN_ERROR };
     }
 
     const token = await tokenHandler({
@@ -83,7 +84,7 @@ class UserService {
     user.password = undefined;
     return {
       SUCCESS: true,
-      msg: userMessages.USER_FOUND,
+      message: userMessages.USER_FOUND,
       data: { user, ...token },
     };
   }
@@ -94,7 +95,7 @@ class UserService {
       "createdAt",
       "User"
     );
-    if (error) return { success: false, msg: error };
+    if (error) return { success: false, message: error };
 
     const getUser = await UserRepository.findUserParams({
       ...params,
@@ -107,11 +108,11 @@ class UserService {
     const count = getUser.length;
 
     if (getUser.length < 1)
-      return { SUCCESS: false, msg: userMessages.USER_NOT_FOUND };
+      return { SUCCESS: false, message: userMessages.USER_NOT_FOUND };
 
     return {
       SUCCESS: true,
-      msg: userMessages.USER_FOUND,
+      message: userMessages.USER_FOUND,
       data: getUser,
       count,
     };
@@ -120,7 +121,7 @@ class UserService {
   static async updateUserService(data) {
     const { body, params } = data;
 
-    // if (data.payload.isDelete) return { SUCCESS: false, msg: userMessages.SOFTDELETE }
+    // if (data.payload.isDelete) return { SUCCESS: false, message: userMessages.SOFTDELETE }
 
     const user = await UserRepository.updateUserById(
       { _id: new mongoose.Types.ObjectId(params.id) },
@@ -130,12 +131,12 @@ class UserService {
     if (!user) {
       return {
         SUCCESS: false,
-        msg: userMessages.UPDATE_PROFILE_FAILURE,
+        message: userMessages.UPDATE_PROFILE_FAILURE,
       };
     } else {
       return {
         SUCCESS: true,
-        msg: userMessages.UPDATE_PROFILE_SUCCESS,
+        message: userMessages.UPDATE_PROFILE_SUCCESS,
         user,
       };
     }
@@ -149,17 +150,17 @@ class UserService {
       _id: new mongoose.Types.ObjectId(body.id),
     });
 
-    if (!user) return { success: false, msg: AuthMessages.USER_NOT_FOUND };
+    if (!user) return { success: false, message: AuthMessages.USER_NOT_FOUND };
 
     const prevPasswordCheck = await verifyPassword(prevPassword, user.password);
     console.log("prev", prevPassword);
     if (!prevPasswordCheck)
-      return { success: false, msg: AuthMessages.INCORRECT_PASSWORD };
+      return { success: false, message: AuthMessages.INCORRECT_PASSWORD };
 
     if (body.password !== body.confirmPassword) {
       return {
         SUCCESS: false,
-        msg: "Passwords mismatch",
+        message: "Passwords mismatch",
       };
     }
 
@@ -176,12 +177,12 @@ class UserService {
     if (changePassword) {
       return {
         SUCCESS: true,
-        msg: AuthMessages.PASSWORD_RESET_SUCCESS,
+        message: AuthMessages.PASSWORD_RESET_SUCCESS,
       };
     } else {
       return {
         SUCCESS: false,
-        msg: AuthMessages.PASSWORD_RESET_FAILURE,
+        message: AuthMessages.PASSWORD_RESET_FAILURE,
       };
     }
   }
@@ -190,8 +191,8 @@ class UserService {
     const { image } = data;
 
     const user = await UserRepository.updateUserById(payload._id, { image });
-    if (!user) return { success: false, msg: userMessages.UPDATE_ERROR };
-    return { success: true, msg: userMessages.UPDATE_SUCCESS };
+    if (!user) return { success: false, message: userMessages.UPDATE_ERROR };
+    return { success: true, message: userMessages.UPDATE_SUCCESS };
   }
 
   static async getLoggedInUser(userPayload) {
@@ -201,9 +202,10 @@ class UserService {
       _id: new mongoose.Types.ObjectId(_id),
     });
     getUser.password = undefined;
-    if (!getUser) return { SUCCESS: false, msg: userMessages.USER_NOT_FOUND };
+    if (!getUser)
+      return { SUCCESS: false, message: userMessages.USER_NOT_FOUND };
 
-    return { SUCCESS: true, msg: userMessages.USER_FOUND, data: getUser };
+    return { SUCCESS: true, message: userMessages.USER_FOUND, data: getUser };
   }
 
   static async deleteUserService(data) {
@@ -214,11 +216,11 @@ class UserService {
     });
 
     if (!deleteUser)
-      return { SUCCESS: false, msg: userMessages.UPDATE_PROFILE_FAILURE };
+      return { SUCCESS: false, message: userMessages.UPDATE_PROFILE_FAILURE };
 
     return {
       SUCCESS: true,
-      msg: userMessages.UPDATE_PROFILE_SUCCESS,
+      message: userMessages.UPDATE_PROFILE_SUCCESS,
       deleteUser,
     };
   }
@@ -230,7 +232,7 @@ class UserService {
       "User"
     );
 
-    if (error) return { success: false, msg: error };
+    if (error) return { success: false, message: error };
 
     const userData = await UserRepository.search({
       ...params,
@@ -240,9 +242,9 @@ class UserService {
     });
 
     if (userData.length < 1)
-      return { SUCCESS: false, msg: userMessages.USER_NOT_FOUND, data: [] };
+      return { SUCCESS: false, message: userMessages.USER_NOT_FOUND, data: [] };
 
-    return { SUCCESS: true, msg: userMessages.USER_FOUND, data: userData };
+    return { SUCCESS: true, message: userMessages.USER_FOUND, data: userData };
   }
 
   static async verifyEmail(payload) {
@@ -252,7 +254,7 @@ class UserService {
     const verifyOtp = await AuthService.verifyOtp({ otp, userDetail: email });
 
     if (!verifyOtp.success) {
-      return { SUCCESS: false, msg: userMessages.VERIFIED_EMAIL_FAILURE };
+      return { SUCCESS: false, message: userMessages.VERIFIED_EMAIL_FAILURE };
     }
 
     // Update user verification status
@@ -262,13 +264,13 @@ class UserService {
     );
 
     if (!user) {
-      return { SUCCESS: false, msg: userMessages.USER_NOT_FOUND };
+      return { SUCCESS: false, message: userMessages.USER_NOT_FOUND };
     }
 
     // Clear the OTP from Redis after successful verification
     await RedisClient.deleteCache(`OTP:${email}`);
 
-    return { SUCCESS: true, msg: userMessages.VERIFIED_EMAIL };
+    return { SUCCESS: true, message: userMessages.VERIFIED_EMAIL };
   }
 }
 

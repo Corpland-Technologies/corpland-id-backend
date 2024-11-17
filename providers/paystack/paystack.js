@@ -28,9 +28,10 @@ class PaystackPaymentService {
   });
 
   checkSuccessStatus(status, gatewayResponse) {
-    if (status === "success") return { success: true, msg: gatewayResponse };
+    if (status === "success")
+      return { success: true, message: gatewayResponse };
 
-    return { success: false, msg: gatewayResponse };
+    return { success: false, message: gatewayResponse };
   }
 
   async verifySuccessOfPayment(payload) {
@@ -53,9 +54,12 @@ class PaystackPaymentService {
       );
 
     if (!updatedExisting)
-      return { success: false, msg: TransactionMessages.PAYMENT_FAILURE };
+      return { success: false, message: TransactionMessages.PAYMENT_FAILURE };
 
-    return { success: statusVerification.success, msg: statusVerification.msg };
+    return {
+      success: statusVerification.success,
+      message: statusVerification.message,
+    };
   }
 
   async initiatePayment(paymentPayload) {
@@ -72,7 +76,10 @@ class PaystackPaymentService {
     });
 
     if (!paystackResponse.status)
-      return { success: false, msg: providerMessages.INITIATE_PAYMENT_FAILURE };
+      return {
+        success: false,
+        message: providerMessages.INITIATE_PAYMENT_FAILURE,
+      };
 
     const paystackData = paystackResponse.data.data;
 
@@ -87,7 +94,7 @@ class PaystackPaymentService {
 
     return {
       success: true,
-      msg: providerMessages.INITIATE_PAYMENT_SUCCESS,
+      message: providerMessages.INITIATE_PAYMENT_SUCCESS,
       data: response,
     };
   }
@@ -103,10 +110,16 @@ class PaystackPaymentService {
     );
 
     if (!transaction?._id)
-      return { success: false, msg: TransactionMessages.TRANSACTION_NOT_FOUND };
+      return {
+        success: false,
+        message: TransactionMessages.TRANSACTION_NOT_FOUND,
+      };
 
     if (transaction?.status != "pending")
-      return { success: false, msg: TransactionMessages.DUPLICATE_TRANSACTION };
+      return {
+        success: false,
+        message: TransactionMessages.DUPLICATE_TRANSACTION,
+      };
 
     const verifyAndUpdateTransactionRecord =
       await this.verifySuccessOfPayment(data);
@@ -127,7 +140,10 @@ class PaystackPaymentService {
         }),
       ]);
 
-      return { success: false, msg: verifyAndUpdateTransactionRecord.msg };
+      return {
+        success: false,
+        message: verifyAndUpdateTransactionRecord.message,
+      };
     }
     if (transaction.paymentFor === "subscription") {
       // Create a new Date object
@@ -156,10 +172,10 @@ class PaystackPaymentService {
         { paymentStatus: "paid" }
       );
 
-      if (!request) return { success: false, msg: `Invalid request Id` };
+      if (!request) return { success: false, message: `Invalid request Id` };
     }
 
-    return { success: true, msg: TransactionMessages.PAYMENT_SUCCESS };
+    return { success: true, message: TransactionMessages.PAYMENT_SUCCESS };
   }
 
   async verifyProviderPayment(reference) {
@@ -172,7 +188,7 @@ class PaystackPaymentService {
       return this.verifyCardPayment(response);
     }
 
-    return { success: false, msg: response.message };
+    return { success: false, message: response.message };
   }
 }
 

@@ -11,7 +11,7 @@ class AuthService {
 
     // const otp = `1234`
     console.log("otp", otp);
-    if (!otp) return { success: false, msg: "no otp genet" };
+    if (!otp) return { success: false, message: "no otp genet" };
 
     //cache otp
     const cacheOtp = await RedisClient.setCache({
@@ -21,11 +21,11 @@ class AuthService {
     console.log("data", cacheOtp);
 
     // console.log('cacheOtp', cacheOtp.value)
-    // if (!cacheOtp) return { success: false, msg: AuthFailure.SEND_OTP }
+    // if (!cacheOtp) return { success: false, message: AuthFailure.SEND_OTP }
 
     return {
       success: true,
-      msg: AuthSuccess.CREATE_OTP,
+      message: AuthSuccess.CREATE_OTP,
       data: otp,
     };
   }
@@ -35,27 +35,27 @@ class AuthService {
       type: phoneNumber for sms and email for email delivery
       userDetail: the phone number or email of the recipient
       length: required length of otp
-      msg: message to be delivered with the otp
+      message: message to be delivered with the otp
     */
     const { type, userDetail, template = "VERIFICATION", name } = payload;
 
     if (!type && !userDetail)
-      return { success: false, msg: "email or userDetail is required" };
+      return { success: false, message: "email or userDetail is required" };
 
     const otp = await this.createOTP(userDetail);
     console.log("otpppp", otp.data);
     console.log("otpppp", otp);
 
-    // if (!otp.success) return { success: false, msg: AuthFailure.SEND_OTP }
+    // if (!otp.success) return { success: false, message: AuthFailure.SEND_OTP }
 
-    const msgDetails = `Please use this otp ${otp.data} on the Corpland Technologies Application. It expires in 30 minutes`;
+    const messageDetails = `Please use this otp ${otp.data} on the Corpland Technologies Application. It expires in 30 minutes`;
 
     let sendOtp;
 
     //check type of delivery and send the otp
     switch (type) {
       case "phoneNumber":
-        sendOtp = await sendSms(userDetail, msgDetails);
+        sendOtp = await sendSms(userDetail, messageDetails);
         break;
       case "email":
         sendOtp = await sendMailNotification(
@@ -70,14 +70,14 @@ class AuthService {
         break;
     }
 
-    //check delivery of msg
+    //check delivery of message
     console.log("sendOtp", sendOtp);
 
-    if (!sendOtp) return { success: false, msg: AuthFailure.SEND_OTP };
+    if (!sendOtp) return { success: false, message: AuthFailure.SEND_OTP };
 
     return {
       success: true,
-      msg: AuthSuccess.SEND_OTP,
+      message: AuthSuccess.SEND_OTP,
     };
   }
 
@@ -87,14 +87,14 @@ class AuthService {
     //fetch cached otp
     const verifyOtp = await RedisClient.getCache(`OTP:${userDetail}`);
 
-    if (!verifyOtp) return { success: false, msg: AuthFailure.VERIFY_OTP };
+    if (!verifyOtp) return { success: false, message: AuthFailure.VERIFY_OTP };
 
     const { otp: cachedOtp } = JSON.parse(verifyOtp);
 
     if (cachedOtp !== otp)
-      return { success: false, msg: AuthFailure.VERIFY_OTP };
+      return { success: false, message: AuthFailure.VERIFY_OTP };
 
-    return { success: true, msg: AuthSuccess.VERIFY_OTP };
+    return { success: true, message: AuthSuccess.VERIFY_OTP };
   }
 
   static async resetAdminPassword(userDetail) {
@@ -106,9 +106,9 @@ class AuthService {
     );
 
     if (!updatePassword)
-      return { success: false, msg: AuthFailure.PASSWORD_RESET };
+      return { success: false, message: AuthFailure.PASSWORD_RESET };
 
-    return { success: true, msg: AuthSuccess.PASSWORD_RESET };
+    return { success: true, message: AuthSuccess.PASSWORD_RESET };
   }
 
   // Logout endpoint
@@ -129,9 +129,9 @@ class AuthService {
         expiry: milliseconds,
       });
 
-      return { success: true, msg: AuthSuccess.LOGOUT };
+      return { success: true, message: AuthSuccess.LOGOUT };
     } else {
-      return { success: false, msg: AuthFailure.ERROR };
+      return { success: false, message: AuthFailure.ERROR };
     }
   }
 }

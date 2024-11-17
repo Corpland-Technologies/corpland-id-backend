@@ -9,7 +9,7 @@ const adminSignUpController = async (req, res, next) => {
   );
   if (error) return next(error);
 
-  if (!data?.SUCCESS) return next(new CustomError(data.msg, 400, data));
+  if (!data?.SUCCESS) return next(new CustomError(data.message, 400, data));
 
   return responseHandler(res, 200, data);
 };
@@ -18,11 +18,11 @@ const adminLogin = async (req, res, next) => {
   const [error, data] = await manageAsyncOps(
     AdminService.adminLoginService(req.body)
   );
-  console.log('err', error)
+  console.log("err", error);
 
   if (error) return next(error);
 
-  if (!data?.SUCCESS) return next(new CustomError(data.msg, 401, data));
+  if (!data?.SUCCESS) return next(new CustomError(data.message, 401, data));
 
   return responseHandler(res, 200, data);
 };
@@ -33,7 +33,7 @@ const getAdminController = async (req, res, next) => {
   );
   if (error) return next(error);
 
-  if (!data.SUCCESS) return next(new CustomError(data.msg, 400, data));
+  if (!data.SUCCESS) return next(new CustomError(data.message, 400, data));
 
   return responseHandler(res, 200, data);
 };
@@ -45,7 +45,7 @@ const getLoggedInAdminController = async (req, res, next) => {
 
   if (error) return next(error);
 
-  if (!data.SUCCESS) return next(new CustomError(data.msg, 400, data));
+  if (!data.SUCCESS) return next(new CustomError(data.message, 400, data));
 
   return responseHandler(res, 200, data);
 };
@@ -54,11 +54,11 @@ const updateAdminController = async (req, res, next) => {
   const [error, data] = await manageAsyncOps(
     AdminService.updateAdminService(req)
   );
-  console.log('err', error)
+  console.log("err", error);
 
   if (error) return next(error);
 
-  if (!data.SUCCESS) return next(new CustomError(data.msg, 400, data));
+  if (!data.SUCCESS) return next(new CustomError(data.message, 400, data));
 
   return responseHandler(res, 200, data);
 };
@@ -67,10 +67,10 @@ const changeAdminPasswordController = async (req, res, next) => {
   const [error, data] = await manageAsyncOps(
     AdminService.changePassword(req.body)
   );
-  console.log('error', error)
+  console.log("error", error);
   if (error) return console.log(error);
 
-  if (!data.SUCCESS) return next(new CustomError(data.msg, 400, data));
+  if (!data.SUCCESS) return next(new CustomError(data.message, 400, data));
 
   return responseHandler(res, 200, data);
 };
@@ -83,7 +83,7 @@ const imageUpload = async (req, res, next) => {
 
   if (error) return next(error);
 
-  if (!data.success) return next(new CustomError(data.msg, 400, data));
+  if (!data.success) return next(new CustomError(data.message, 400, data));
 
   return responseHandler(res, 200, data);
 };
@@ -94,7 +94,7 @@ const deleteAdminController = async (req, res, next) => {
   );
   if (error) return next(error);
 
-  if (!data.SUCCESS) return next(new CustomError(data.msg, 400, data));
+  if (!data.SUCCESS) return next(new CustomError(data.message, 400, data));
 
   return responseHandler(res, 200, data);
 };
@@ -106,7 +106,7 @@ const searchAdminController = async (req, res, next) => {
 
   if (error) return console.log(error);
 
-  if (!data.SUCCESS) return next(new CustomError(data.msg, 400, data));
+  if (!data.SUCCESS) return next(new CustomError(data.message, 400, data));
 
   return responseHandler(res, 200, data);
 };

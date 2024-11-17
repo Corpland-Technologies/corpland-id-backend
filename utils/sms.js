@@ -55,14 +55,14 @@ const sendSms = async (
     .then((data) => {
       return {
         success: true,
-        msg: AuthSuccess.SMS,
+        message: AuthSuccess.SMS,
         data,
       };
     })
     .catch((error) => {
       return {
         success: false,
-        msg: AuthFailure.SMS,
+        message: AuthFailure.SMS,
         data: error,
       };
     });

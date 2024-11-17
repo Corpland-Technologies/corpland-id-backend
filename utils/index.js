@@ -11,7 +11,7 @@ const tokenHandler = async (payload) => {
     const token = jwt.sign({ ...payload }, process.env.JWT_SECRET, {
       expiresIn: "1d",
     });
-    return { token }; 
+    return { token };
   } catch (error) {
     throw new Error("Unable to generate token.");
   }
@@ -192,17 +192,17 @@ const dateCheck = (initDate, endDate) => {
   const date = new Date(d.setHours(d.getHours() - 2));
 
   if (initDate < date.toISOString()) {
-    return { success: false, msg: "Please select a future date" };
+    return { success: false, message: "Please select a future date" };
   }
 
   if (endDate && endDate < initDate) {
     return {
       success: false,
-      msg: "Start date cannot be greater than end date",
+      message: "Start date cannot be greater than end date",
     };
   }
 
-  return { success: true, msg: "Date verified" };
+  return { success: true, message: "Date verified" };
 };
 
 const manageAsyncOps = async (fn) => {

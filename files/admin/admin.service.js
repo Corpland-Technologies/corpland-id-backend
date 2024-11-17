@@ -20,7 +20,7 @@ class AdminService {
     });
 
     if (admin) {
-      return { SUCCESS: false, msg: adminMessages.ADMIN_EXISTS };
+      return { SUCCESS: false, message: adminMessages.ADMIN_EXISTS };
     }
 
     const password = await hashPassword(body.password);
@@ -43,7 +43,11 @@ class AdminService {
       console.log("sendgrid error", error);
     }
 
-    return { SUCCESS: true, msg: adminMessages.ADMIN_CREATED, data: signUp };
+    return {
+      SUCCESS: true,
+      message: adminMessages.ADMIN_CREATED,
+      data: signUp,
+    };
   }
 
   static async adminLoginService(body) {
@@ -54,18 +58,18 @@ class AdminService {
     if (!admin) {
       return {
         SUCCESS: false,
-        msg: AuthMessages.LOGIN_ERROR,
+        message: AuthMessages.LOGIN_ERROR,
       };
     }
 
     //confirm if admin has been deleted
     if (admin.isDelete)
-      return { success: false, msg: adminMessages.SOFTDELETE };
+      return { success: false, message: adminMessages.SOFTDELETE };
 
     const passwordCheck = await verifyPassword(body.password, admin.password);
 
     if (!passwordCheck) {
-      return { SUCCESS: false, msg: adminMessages.LOGIN_ERROR };
+      return { SUCCESS: false, message: adminMessages.LOGIN_ERROR };
     }
 
     const token = await tokenHandler({
@@ -77,7 +81,7 @@ class AdminService {
     admin.password = undefined;
     return {
       SUCCESS: true,
-      msg: adminMessages.ADMIN_FOUND,
+      message: adminMessages.ADMIN_FOUND,
       data: { admin, ...token },
     };
   }
@@ -88,7 +92,7 @@ class AdminService {
       "createdAt",
       "Admin"
     );
-    if (error) return { success: false, msg: error };
+    if (error) return { success: false, message: error };
 
     const getAdmin = await AdminRepository.findAdminParams({
       ...params,
@@ -101,11 +105,11 @@ class AdminService {
     const count = getAdmin.length;
 
     if (getAdmin.length < 1)
-      return { SUCCESS: false, msg: adminMessages.ADMIN_NOT_FOUND };
+      return { SUCCESS: false, message: adminMessages.ADMIN_NOT_FOUND };
 
     return {
       SUCCESS: true,
-      msg: adminMessages.ADMIN_FOUND,
+      message: adminMessages.ADMIN_FOUND,
       data: getAdmin,
       count,
     };
@@ -114,23 +118,22 @@ class AdminService {
   static async updateAdminService(data) {
     const { body, params } = data;
 
-    // if (data.payload.isDelete) return { SUCCESS: false, msg: adminMessages.SOFTDELETE }
+    // if (data.payload.isDelete) return { SUCCESS: false, message: adminMessages.SOFTDELETE }
 
     const admin = await AdminRepository.updateAdminById(
       { _id: new mongoose.Types.ObjectId(params.id) },
-      { $set: { ...body } },
-      
+      { $set: { ...body } }
     );
 
     if (!admin) {
       return {
         SUCCESS: false,
-        msg: adminMessages.UPDATE_PROFILE_FAILURE,
+        message: adminMessages.UPDATE_PROFILE_FAILURE,
       };
     } else {
       return {
         SUCCESS: true,
-        msg: adminMessages.UPDATE_PROFILE_SUCCESS,
+        message: adminMessages.UPDATE_PROFILE_SUCCESS,
         admin,
       };
     }
@@ -144,20 +147,21 @@ class AdminService {
       _id: new mongoose.Types.ObjectId(body.id),
     });
 
-    if (!admin) return { success: false, msg: AuthMessages.ADMIN_NOT_FOUND };
+    if (!admin)
+      return { success: false, message: AuthMessages.ADMIN_NOT_FOUND };
 
     const prevPasswordCheck = await verifyPassword(
       prevPassword,
       admin.password
     );
-    console.log('prev', prevPassword)
+    console.log("prev", prevPassword);
     if (!prevPasswordCheck)
-      return { success: false, msg: AuthMessages.INCORRECT_PASSWORD };
+      return { success: false, message: AuthMessages.INCORRECT_PASSWORD };
 
     if (body.password !== body.confirmPassword) {
       return {
         SUCCESS: false,
-        msg: "Passwords mismatch",
+        message: "Passwords mismatch",
       };
     }
 
@@ -169,17 +173,17 @@ class AdminService {
         password,
       }
     );
-    console.log('pass', password)
+    console.log("pass", password);
 
     if (changePassword) {
       return {
         SUCCESS: true,
-        msg: AuthMessages.PASSWORD_RESET_SUCCESS,
+        message: AuthMessages.PASSWORD_RESET_SUCCESS,
       };
     } else {
       return {
         SUCCESS: false,
-        msg: AuthMessages.PASSWORD_RESET_FAILURE,
+        message: AuthMessages.PASSWORD_RESET_FAILURE,
       };
     }
   }
@@ -188,8 +192,8 @@ class AdminService {
     const { image } = data;
 
     const admin = await AdminRepository.updateAdminById(payload._id, { image });
-    if (!admin) return { success: false, msg: adminMessages.UPDATE_ERROR };
-    return { success: true, msg: adminMessages.UPDATE_SUCCESS };
+    if (!admin) return { success: false, message: adminMessages.UPDATE_ERROR };
+    return { success: true, message: adminMessages.UPDATE_SUCCESS };
   }
 
   static async getLoggedInAdmin(adminPayload) {
@@ -200,9 +204,13 @@ class AdminService {
     });
     getAdmin.password = undefined;
     if (!getAdmin)
-      return { SUCCESS: false, msg: adminMessages.ADMIN_NOT_FOUND };
+      return { SUCCESS: false, message: adminMessages.ADMIN_NOT_FOUND };
 
-    return { SUCCESS: true, msg: adminMessages.ADMIN_FOUND, data: getAdmin };
+    return {
+      SUCCESS: true,
+      message: adminMessages.ADMIN_FOUND,
+      data: getAdmin,
+    };
   }
 
   static async deleteAdminService(data) {
@@ -213,11 +221,11 @@ class AdminService {
     });
 
     if (!deleteAdmin)
-      return { SUCCESS: false, msg: adminMessages.UPDATE_PROFILE_FAILURE };
+      return { SUCCESS: false, message: adminMessages.UPDATE_PROFILE_FAILURE };
 
     return {
       SUCCESS: true,
-      msg: adminMessages.UPDATE_PROFILE_SUCCESS,
+      message: adminMessages.UPDATE_PROFILE_SUCCESS,
       deleteAdmin,
     };
   }
@@ -229,7 +237,7 @@ class AdminService {
       "Admin"
     );
 
-    if (error) return { success: false, msg: error };
+    if (error) return { success: false, message: error };
 
     const adminData = await AdminRepository.search({
       ...params,
@@ -239,9 +247,17 @@ class AdminService {
     });
 
     if (adminData.length < 1)
-      return { SUCCESS: false, msg: adminMessages.ADMIN_NOT_FOUND, data: [] };
+      return {
+        SUCCESS: false,
+        message: adminMessages.ADMIN_NOT_FOUND,
+        data: [],
+      };
 
-    return { SUCCESS: true, msg: adminMessages.ADMIN_FOUND, data: adminData };
+    return {
+      SUCCESS: true,
+      message: adminMessages.ADMIN_FOUND,
+      data: adminData,
+    };
   }
 }
 
