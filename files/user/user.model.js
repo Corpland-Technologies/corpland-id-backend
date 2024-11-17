@@ -32,6 +32,10 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    termsAndConditions: {
+      type: Boolean,
+      default: true,
+    },
     isDelete: {
       type: Boolean,
       default: false,
