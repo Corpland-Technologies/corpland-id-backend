@@ -24,6 +24,16 @@ class DeviceService {
     }
   }
 
+  static async getAllDevices() {
+    const devices = await DeviceRepository.fetchAllDevices();
+    return {
+      success: true,
+      msg: DeviceMessages.FETCH_SUCCESS,
+      data: devices,
+      count: devices.length,
+    };
+  }
+
   static async getDevice(payload) {
     let { error, params, limit, skip, sort } = queryConstructor(
       payload,

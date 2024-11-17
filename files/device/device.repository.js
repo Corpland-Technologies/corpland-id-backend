@@ -6,6 +6,10 @@ class DeviceRepository {
     return Device.create({ ...payload });
   }
 
+  static async fetchAllDevices() {
+    return Device.find();
+  }
+
   static async fetchOne(payload) {
     return Device.findOne({ ...payload });
   }

@@ -14,6 +14,16 @@ const createDeviceController = async (req, res, next) => {
   return responseHandler(res, SUCCESS, data);
 };
 
+const getAllDevicesController = async (req, res, next) => {
+  const [error, data] = await manageAsyncOps(DeviceService.getAllDevices());
+  
+  if (error) return next(error);
+
+  if (!data.success) return next(new CustomError(data.msg, BAD_REQUEST, data));
+
+  return responseHandler(res, SUCCESS, data);
+};
+
 const getDeviceController = async (req, res, next) => {
   const [error, data] = await manageAsyncOps(
     DeviceService.getDevice(req.query, res.locals.jwt)
@@ -55,4 +65,5 @@ module.exports = {
   getDeviceController,
   updateDeviceController,
   deleteDeviceController,
+  getAllDevicesController,
 };
