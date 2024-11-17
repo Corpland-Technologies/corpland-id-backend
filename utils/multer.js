@@ -14,7 +14,7 @@ const uploadManager = (destination) => {
     storage: new CloudinaryStorage({
       cloudinary: cloudinary,
       params: {
-        folder: `Jenosway/${destination}`,
+        folder: `CorplandTechnologies/${destination}`,
       },
     }),
   })
