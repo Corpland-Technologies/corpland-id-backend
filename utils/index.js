@@ -8,9 +8,7 @@ const COUNTRY_CODE = "234";
 
 const tokenHandler = async (payload) => {
   try {
-    const token = jwt.sign({ ...payload }, process.env.JWT_SECRET, {
-      expiresIn: "1d",
-    });
+    const token = jwt.sign({ ...payload }, process.env.JWT_SECRET);
     return { token };
   } catch (error) {
     throw new Error("Unable to generate token.");
