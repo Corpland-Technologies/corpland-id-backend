@@ -62,13 +62,13 @@ class UserService {
     if (!user) {
       return {
         SUCCESS: false,
-        message: AuthMessages.LOGIN_ERROR,
+        message: userMessages.LOGIN_ERROR,
       };
     }
 
     //confirm if user has been deleted
     if (user.isDelete)
-      return { success: false, message: userMessages.SOFTDELETE };
+      return { SUCCESS: false, message: userMessages.SOFTDELETE };
 
     const passwordCheck = await verifyPassword(body.password, user.password);
 

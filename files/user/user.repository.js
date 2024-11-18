@@ -8,8 +8,7 @@ class UserRepository {
   }
 
   static async fetchUser(body) {
-    const user = await User.findOne({ ...body });
-    return user;
+    return User.findOne({ ...body });
   }
 
   static async findUserParams(userPayload, select) {

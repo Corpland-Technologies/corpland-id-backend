@@ -122,6 +122,8 @@ const hashPassword = async (password) => {
 };
 
 const verifyPassword = async (password, dbpassword) => {
+  console.log("password", password);
+  console.log("dbpassword", dbpassword);
   return bcrypt.compare(password, dbpassword);
 };
 
