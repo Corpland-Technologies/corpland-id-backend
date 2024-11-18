@@ -18,7 +18,7 @@ const { RedisClient } = require("../../utils/redis");
 class UserService {
   static async userSignUpService(body) {
     const user = await UserRepository.fetchUser({
-      $or: [{ email: body.email }, { phoneNumber: body.phoneNumber }],
+      email: body.email,
     });
 
     if (user) {
@@ -249,6 +249,8 @@ class UserService {
 
   static async verifyEmail(payload) {
     const { email, otp } = payload;
+    console.log("email", email);
+    console.log("otp", otp);
 
     // Verify OTP
     const verifyOtp = await AuthService.verifyOtp({ otp, userDetail: email });
