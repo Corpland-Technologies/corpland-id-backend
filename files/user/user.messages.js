@@ -21,4 +21,10 @@ module.exports.userMessages = {
   SOFTDELETE: "User account deleted",
   UPDATE_ERROR: "User update unsuccessful",
   UPDATE_SUCCESS: "User update successful",
+  OTP_SEND_FAILED: "Failed to send verification code",
+  OTP_SENT: "Verification code sent successfully",
+  INVALID_OTP: "Invalid verification code",
+  OTP_VERIFIED: "Verification code verified successfully",
+  PASSWORD_RESET_FAILED: "Failed to reset password",
+  PASSWORD_RESET_SUCCESS: "Password reset successfully",
 };

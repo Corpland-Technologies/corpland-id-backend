@@ -274,6 +274,71 @@ class UserService {
 
     return { SUCCESS: true, message: userMessages.VERIFIED_EMAIL };
   }
+
+  static async forgotPasswordService(body) {
+    const { email } = body;
+    
+    const user = await UserRepository.fetchUser({ email });
+    
+    if (!user) {
+      return { SUCCESS: false, message: userMessages.USER_NOT_FOUND };
+    }
+
+    // Send verification OTP
+    const sendOtp = await AuthService.sendOtp({
+      type: "email",
+      userDetail: email,
+      template: "RESET_PASSWORD",
+      name: user.name,
+    });
+
+    if (!sendOtp.success) {
+      return { SUCCESS: false, message: userMessages.OTP_SEND_FAILED };
+    }
+
+    return { SUCCESS: true, message: userMessages.OTP_SENT };
+  }
+
+  static async verifyResetCodeService(body) {
+    const { email, resetCode } = body;
+
+    const verifyOtp = await AuthService.verifyOtp({ 
+      otp: resetCode, 
+      userDetail: email 
+    });
+
+    if (!verifyOtp.success) {
+      return { SUCCESS: false, message: userMessages.INVALID_OTP };
+    }
+
+    return { SUCCESS: true, message: userMessages.OTP_VERIFIED };
+  }
+
+  static async resetPasswordService(body) {
+    const { email, newPassword } = body;
+
+    const user = await UserRepository.fetchUser({ email });
+    
+    if (!user) {
+      return { SUCCESS: false, message: userMessages.USER_NOT_FOUND };
+    }
+
+    const password = await hashPassword(newPassword);
+    
+    const updatePassword = await UserRepository.updateUserDetails(
+      { email },
+      { password }
+    );
+
+    if (!updatePassword) {
+      return { SUCCESS: false, message: userMessages.PASSWORD_RESET_FAILED };
+    }
+
+    // Clear the OTP from Redis after successful password reset
+    await RedisClient.deleteCache(`OTP:${email}`);
+
+    return { SUCCESS: true, message: userMessages.PASSWORD_RESET_SUCCESS };
+  }
 }
 
 module.exports = { UserService };

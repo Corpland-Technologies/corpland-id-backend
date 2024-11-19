@@ -119,6 +119,42 @@ const verifyEmailController = async (req, res, next) => {
   return responseHandler(res, 200, data);
 };
 
+const forgotPasswordController = async (req, res, next) => {
+  const [error, data] = await manageAsyncOps(
+    UserService.forgotPasswordService(req.body)
+  );
+
+  if (error) return next(error);
+
+  if (!data.SUCCESS) return next(new CustomError(data.message, BAD_REQUEST, data));
+
+  return responseHandler(res, SUCCESS, data);
+};
+
+const verifyResetCodeController = async (req, res, next) => {
+  const [error, data] = await manageAsyncOps(
+    UserService.verifyResetCodeService(req.body)
+  );
+
+  if (error) return next(error);
+
+  if (!data.SUCCESS) return next(new CustomError(data.message, BAD_REQUEST, data));
+
+  return responseHandler(res, SUCCESS, data);
+};
+
+const resetPasswordController = async (req, res, next) => {
+  const [error, data] = await manageAsyncOps(
+    UserService.resetPasswordService(req.body)
+  );
+
+  if (error) return next(error);
+
+  if (!data.SUCCESS) return next(new CustomError(data.message, BAD_REQUEST, data));
+
+  return responseHandler(res, SUCCESS, data);
+};
+
 module.exports = {
   userSignUpController,
   userLogin,
@@ -130,4 +166,7 @@ module.exports = {
   deleteUserController,
   searchUserController,
   verifyEmailController,
+  forgotPasswordController,
+  verifyResetCodeController,
+  resetPasswordController,
 };
