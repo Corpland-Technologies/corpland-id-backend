@@ -1,11 +1,23 @@
 const cron = require("node-cron");
-// const { TripsService } = require("../files/trips/trips.service")
+const axios = require("axios");
+const { config } = require("../core/config");
 
-//Schedule the rewardRiders function to run every day at 12:00 AM
-module.exports.rewardRider = async () => {
-  // cron.schedule('*/5 * * * *', async () => {
-  cron.schedule("0 0 * * *", async () => {
-    // console.log("Running rewardRiders function...");
-    // await  TripsService.rewardRiders();
+// Self-ping function to keep the server alive
+const pingServer = async () => {
+  try {
+    const response = await axios.get(`${config.BASE_URL}`);
+    console.log("Server pinged successfully:", response.status);
+  } catch (error) {
+    console.error("Error pinging server:", error.message);
+  }
+};
+
+// Schedule the ping every 1 minute (Render free tier sleeps after 15 minutes of inactivity)
+const keepServerAlive = () => {
+  cron.schedule("*/1 * * * *", async () => {
+    await pingServer();
   });
 };
+
+
+module.exports = { keepServerAlive };
