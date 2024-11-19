@@ -2,6 +2,7 @@ const { manageAsyncOps, fileModifier } = require("../../utils/index");
 const { UserService } = require("./user.service");
 const { responseHandler } = require("../../core/response");
 const { CustomError } = require("../../utils/errors");
+const { SUCCESS, BAD_REQUEST } = require("../../constants/statusCode");
 
 const userSignUpController = async (req, res, next) => {
   const [error, data] = await manageAsyncOps(
@@ -12,7 +13,7 @@ const userSignUpController = async (req, res, next) => {
 
   if (!data?.SUCCESS) return next(new CustomError(data.message, 400, data));
 
-  return responseHandler(res, 200, data);
+  return responseHandler(res, SUCCESS, data);
 };
 
 const userLogin = async (req, res, next) => {
@@ -25,7 +26,7 @@ const userLogin = async (req, res, next) => {
 
   if (!data?.SUCCESS) return next(new CustomError(data.message, 401, data));
 
-  return responseHandler(res, 200, data);
+  return responseHandler(res, SUCCESS, data);
 };
 
 const getUserController = async (req, res, next) => {
@@ -36,7 +37,7 @@ const getUserController = async (req, res, next) => {
 
   if (!data.SUCCESS) return next(new CustomError(data.message, 400, data));
 
-  return responseHandler(res, 200, data);
+  return responseHandler(res, SUCCESS, data);
 };
 
 const getLoggedInUserController = async (req, res, next) => {
@@ -48,7 +49,7 @@ const getLoggedInUserController = async (req, res, next) => {
 
   if (!data.SUCCESS) return next(new CustomError(data.message, 400, data));
 
-  return responseHandler(res, 200, data);
+  return responseHandler(res, SUCCESS, data);
 };
 
 const updateUserController = async (req, res, next) => {
@@ -61,7 +62,7 @@ const updateUserController = async (req, res, next) => {
 
   if (!data.SUCCESS) return next(new CustomError(data.message, 400, data));
 
-  return responseHandler(res, 200, data);
+  return responseHandler(res, SUCCESS, data);
 };
 
 const changeUserPasswordController = async (req, res, next) => {
@@ -73,7 +74,7 @@ const changeUserPasswordController = async (req, res, next) => {
 
   if (!data.SUCCESS) return next(new CustomError(data.message, 400, data));
 
-  return responseHandler(res, 200, data);
+  return responseHandler(res, SUCCESS, data);
 };
 
 const imageUpload = async (req, res, next) => {
@@ -86,7 +87,7 @@ const imageUpload = async (req, res, next) => {
 
   if (!data.success) return next(new CustomError(data.message, 400, data));
 
-  return responseHandler(res, 200, data);
+  return responseHandler(res, SUCCESS, data);
 };
 
 const deleteUserController = async (req, res, next) => {
@@ -97,7 +98,7 @@ const deleteUserController = async (req, res, next) => {
 
   if (!data.SUCCESS) return next(new CustomError(data.message, 400, data));
 
-  return responseHandler(res, 200, data);
+  return responseHandler(res, SUCCESS, data);
 };
 
 const searchUserController = async (req, res, next) => {
@@ -107,7 +108,7 @@ const searchUserController = async (req, res, next) => {
 
   if (!data.SUCCESS) return next(new CustomError(data.message, 400, data));
 
-  return responseHandler(res, 200, data);
+  return responseHandler(res, SUCCESS, data);
 };
 
 const verifyEmailController = async (req, res, next) => {
@@ -116,7 +117,7 @@ const verifyEmailController = async (req, res, next) => {
 
   if (!data.SUCCESS) return next(new CustomError(data.message, 400, data));
 
-  return responseHandler(res, 200, data);
+  return responseHandler(res, SUCCESS, data);
 };
 
 const forgotPasswordController = async (req, res, next) => {
@@ -124,9 +125,10 @@ const forgotPasswordController = async (req, res, next) => {
     UserService.forgotPasswordService(req.body)
   );
 
-  if (error) return next(error);
+  if (error) return console.log(error);
 
-  if (!data.SUCCESS) return next(new CustomError(data.message, BAD_REQUEST, data));
+  if (!data.SUCCESS)
+    return next(new CustomError(data.message, BAD_REQUEST, data));
 
   return responseHandler(res, SUCCESS, data);
 };
@@ -138,7 +140,8 @@ const verifyResetCodeController = async (req, res, next) => {
 
   if (error) return next(error);
 
-  if (!data.SUCCESS) return next(new CustomError(data.message, BAD_REQUEST, data));
+  if (!data.SUCCESS)
+    return next(new CustomError(data.message, BAD_REQUEST, data));
 
   return responseHandler(res, SUCCESS, data);
 };
@@ -150,7 +153,8 @@ const resetPasswordController = async (req, res, next) => {
 
   if (error) return next(error);
 
-  if (!data.SUCCESS) return next(new CustomError(data.message, BAD_REQUEST, data));
+  if (!data.SUCCESS)
+    return next(new CustomError(data.message, BAD_REQUEST, data));
 
   return responseHandler(res, SUCCESS, data);
 };
