@@ -4,7 +4,7 @@ const path = require("path");
 const connectToDatabase = require("./db");
 const { config } = require("./config");
 const { redis } = require("../utils/redis");
-const { rewardRider } = require("../utils/cron");
+const { keepServerAlive } = require("../utils/cron");
 
 dotenv.config({ path: path.join(__dirname, "../.env") });
 
@@ -15,7 +15,7 @@ const startServer = () => {
   connectToDatabase();
 
   //cron job
-  rewardRider();
+  keepServerAlive();
 
   //redis server
   redis.on("connect", function () {
