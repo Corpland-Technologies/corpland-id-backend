@@ -2,7 +2,8 @@ module.exports.userMessages = {
   USER_NOT_CREATED: "User could not be created",
   UNVERIFIED_EMAIL: "Please verify your email",
   VERIFIED_EMAIL: "Email successfully verified",
-  VERIFIED_EMAIL_FAILURE: "Unable to verify email",
+  VERIFIED_EMAIL_FAILURE:
+    "Incorrect verification code, Check your email and try again",
 
   LOGIN_ERROR: "One or more details is incorrect",
   USER_NOT_FOUND: "User not found",

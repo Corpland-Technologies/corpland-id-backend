@@ -249,8 +249,6 @@ class UserService {
 
   static async verifyEmail(payload) {
     const { email, otp } = payload;
-    console.log("email", email);
-    console.log("otp", otp);
 
     // Verify OTP
     const verifyOtp = await AuthService.verifyOtp({ otp, userDetail: email });
@@ -277,9 +275,9 @@ class UserService {
 
   static async forgotPasswordService(body) {
     const { email } = body;
-    
+
     const user = await UserRepository.fetchUser({ email });
-    
+
     if (!user) {
       return { SUCCESS: false, message: userMessages.USER_NOT_FOUND };
     }
@@ -302,9 +300,9 @@ class UserService {
   static async verifyResetCodeService(body) {
     const { email, resetCode } = body;
 
-    const verifyOtp = await AuthService.verifyOtp({ 
-      otp: resetCode, 
-      userDetail: email 
+    const verifyOtp = await AuthService.verifyOtp({
+      otp: resetCode,
+      userDetail: email,
     });
 
     if (!verifyOtp.success) {
@@ -318,13 +316,13 @@ class UserService {
     const { email, newPassword } = body;
 
     const user = await UserRepository.fetchUser({ email });
-    
+
     if (!user) {
       return { SUCCESS: false, message: userMessages.USER_NOT_FOUND };
     }
 
     const password = await hashPassword(newPassword);
-    
+
     const updatePassword = await UserRepository.updateUserDetails(
       { email },
       { password }
