@@ -12,9 +12,9 @@ const pingServer = async () => {
   }
 };
 
-// Schedule the ping every 1 minute (Render free tier sleeps after 15 minutes of inactivity)
+// Schedule the ping every 10 minutes (Render free tier sleeps after 15 minutes of inactivity)
 const keepServerAlive = () => {
-  cron.schedule("*/1 * * * *", async () => {
+  cron.schedule("*/10 * * * *", async () => {
     await pingServer();
   });
 };
