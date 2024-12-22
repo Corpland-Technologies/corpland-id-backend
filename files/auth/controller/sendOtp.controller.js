@@ -2,7 +2,7 @@ const { SUCCESS, BAD_REQUEST } = require("../../../constants/statusCode");
 const { responseHandler } = require("../../../core/response");
 const { manageAsyncOps } = require("../../../utils");
 const { CustomError } = require("../../../utils/errors");
-const AuthService = require("../auth.service");
+const { AuthService } = require("../auth.service");
 
 const sendOtpController = async (req, res, next) => {
   const [error, data] = await manageAsyncOps(AuthService.sendOtp(req.body));
