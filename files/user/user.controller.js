@@ -159,6 +159,18 @@ const resetPasswordController = async (req, res, next) => {
   return responseHandler(res, SUCCESS, data);
 };
 
+const getAllUsersController = async (req, res, next) => {
+  const [error, data] = await manageAsyncOps(
+    UserService.getAllUsersService(req.query)
+  );
+
+  if (error) return next(error);
+
+  if (!data.SUCCESS) return next(new CustomError(data.message, 400, data));
+
+  return responseHandler(res, SUCCESS, data);
+};
+
 module.exports = {
   userSignUpController,
   userLogin,
@@ -173,4 +185,5 @@ module.exports = {
   forgotPasswordController,
   verifyResetCodeController,
   resetPasswordController,
+  getAllUsersController,
 };

@@ -147,6 +147,30 @@ class SessionService {
       });
     });
   }
+
+  static async logoutUser(payload, res) {
+    const { refreshToken } = payload.cookies;
+
+    if (!refreshToken) {
+      return { success: false, message: SessionMessages.REQUIRED };
+    }
+
+    // Remove the refresh token from the repository (assuming you have a method for this)
+    const result = await SessionRepository.deleteSession({
+      token: refreshToken,
+    });
+
+    if (!result) {
+      return { success: false, message: SessionMessages.lOGOUT_FAILURE };
+    }
+
+    res.clearCookie("refreshToken");
+
+    return {
+      success: true,
+      message: "Logged out successfully",
+    };
+  }
 }
 
 module.exports = { SessionService };

@@ -239,7 +239,7 @@ class UserService {
 
   static async getLoggedInUser(userPayload) {
     const { _id } = userPayload;
-    
+
     const getUser = await UserRepository.fetchUser({
       _id: new mongoose.Types.ObjectId(_id),
     });
@@ -356,6 +356,9 @@ class UserService {
 
   static async resetPasswordService(body) {
     const { email, newPassword } = body;
+    console.log("body", body);
+    console.log("email", email);
+    console.log("newPassword", newPassword);
 
     const user = await UserRepository.fetchUser({ email });
 
@@ -378,6 +381,41 @@ class UserService {
     await RedisClient.deleteCache(`OTP:${email}`);
 
     return { SUCCESS: true, message: userMessages.PASSWORD_RESET_SUCCESS };
+  }
+
+  static async getAllUsersService(query = {}) {
+    const { error, params, limit, skip, sort } = queryConstructor(
+      query,
+      "createdAt",
+      "User"
+    );
+    if (error) return { success: false, message: error };
+
+    const users = await UserRepository.findUserParams({
+      ...params,
+      limit,
+      skip,
+      sort,
+    });
+
+    const count = users.length;
+
+    if (users.length < 1)
+      return { SUCCESS: false, message: userMessages.USER_NOT_FOUND };
+
+    // Remove password from each user object
+    const sanitizedUsers = users.map((user) => {
+      const userObj = user.toObject();
+      delete userObj.password;
+      return userObj;
+    });
+
+    return {
+      SUCCESS: true,
+      message: userMessages.USERS_FETCHED,
+      data: sanitizedUsers,
+      count,
+    };
   }
 }
 
