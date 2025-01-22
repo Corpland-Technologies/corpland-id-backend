@@ -15,7 +15,7 @@ const startServer = () => {
   connectToDatabase();
 
   //cron job
-  keepServerAlive();
+  // keepServerAlive();
 
   //redis server
   redis.on("connect", function () {

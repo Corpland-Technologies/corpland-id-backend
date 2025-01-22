@@ -1,21 +1,10 @@
 const mongoose = require("mongoose");
 const { config } = require("../../core/config");
-const {
-  TransactionMessages,
-} = require("../../files/transaction/transaction.messages");
-const {
-  TransactionRepository,
-} = require("../../files/transaction/transaction.repository");
+const { PaymentMessages } = require("../../files/payment/payment.messages");
+const { PaymentRepository } = require("../../files/payment/payment.repository");
 
 const RequestHandler = require("../../utils/axios.provision");
 const { providerMessages } = require("../providers.messages");
-const {
-  NotificationRepository,
-} = require("../../files/notifications/notification.repository");
-
-const {
-  SubscriberRepository,
-} = require("../../files/subscriber/subscriber.repository");
 
 class PaystackPaymentService {
   paymentRequestHandler = RequestHandler.setup({
@@ -42,19 +31,18 @@ class PaystackPaymentService {
 
     let responseStatus = "pending";
     if (statusVerification.success) {
-      responseStatus = "confirmed";
+      responseStatus = "success";
     } else {
       responseStatus = "failed";
     }
 
-    const updatedExisting =
-      await TransactionRepository.updateTransactionDetails(
-        { reference: payload.reference },
-        { status: responseStatus, metaData: JSON.stringify(payload) }
-      );
+    const updatedExisting = await PaymentRepository.updatePayment(
+      { referenceCode: payload.reference },
+      { status: responseStatus }
+    );
 
     if (!updatedExisting)
-      return { success: false, message: TransactionMessages.PAYMENT_FAILURE };
+      return { success: false, message: PaymentMessages.PAYMENT_FAILURE };
 
     return {
       success: statusVerification.success,
@@ -100,82 +88,34 @@ class PaystackPaymentService {
   }
 
   async verifyCardPayment(payload) {
-    //check success of transaction
     const { data } = payload;
-    const transaction = await TransactionRepository.fetchOne(
-      {
-        reference: data.reference,
-      },
-      true
-    );
+    const payment = await PaymentRepository.fetchOne({
+      referenceCode: data.reference,
+    });
 
-    if (!transaction?._id)
+    if (!payment)
       return {
         success: false,
-        message: TransactionMessages.TRANSACTION_NOT_FOUND,
+        message: PaymentMessages.NOT_FOUND,
       };
 
-    if (transaction?.status != "pending")
+    if (payment.status !== "pending")
       return {
         success: false,
-        message: TransactionMessages.DUPLICATE_TRANSACTION,
+        message: PaymentMessages.EXIST,
       };
 
-    const verifyAndUpdateTransactionRecord =
+    const verifyAndUpdatePaymentRecord =
       await this.verifySuccessOfPayment(data);
 
-    if (!verifyAndUpdateTransactionRecord.success) {
-      await Promise.all([
-        await NotificationRepository.createNotification({
-          recipientId: new mongoose.Types.ObjectId(transaction.userId),
-          userType: transaction.userType,
-          title: "Payment",
-          message: `Unconfirmed/failed payment of ${data.amount}`,
-        }),
-        await NotificationRepository.createNotification({
-          title: "Payment",
-          message: `Unconfirmed/failed payment of ${data.amount}`,
-          recipientId: new mongoose.Types.ObjectId(transaction.userId),
-          recipient: "Admin",
-        }),
-      ]);
-
+    if (!verifyAndUpdatePaymentRecord.success) {
       return {
         success: false,
-        message: verifyAndUpdateTransactionRecord.message,
+        message: verifyAndUpdatePaymentRecord.message,
       };
     }
-    if (transaction.paymentFor === "subscription") {
-      // Create a new Date object
-      let currentDate = new Date();
 
-      // Add 30 days to the current date
-      currentDate.setDate(currentDate.getDate() + transaction.activeDays);
-
-      await SubscriberRepository.create({
-        userType: transaction.userType,
-        subscriberId: new mongoose.Types.ObjectId(transaction.userId),
-        subscriptionId: new mongoose.Types.ObjectId(transaction.subscriptionId),
-        transactionId: new mongoose.Types.ObjectId(transaction._id),
-        expiryDate: currentDate,
-        deliveriesLeft: transaction.activeDays,
-        status: "active",
-        dateSubscribed: new Date(),
-      });
-    }
-
-    if (transaction.paymentFor === "delivery" && status === "confirmed") {
-      const request = await RequestRepository.updateRequestDetails(
-        {
-          _id: new mongoose.Types.ObjectId(transaction.requestId),
-        },
-        { paymentStatus: "paid" }
-      );
-
-      if (!request) return { success: false, message: `Invalid request Id` };
-    }
-
-    return { success: true, message: TransactionMessages.PAYMENT_SUCCESS };
+    return { success: true, message: PaymentMessages.PAYMENT_SUCCESS };
   }
 
   async verifyProviderPayment(reference) {

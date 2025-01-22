@@ -94,7 +94,7 @@ const logoutController = async (req, res, next) => {
     AuthService.userLogOut(req.headers.authorization)
   );
 
-  if (error) return next(error);
+  if (error) return console.log(error);
 
   if (!data.success)
     return next(new CustomError(data.message, BAD_REQUEST, data));

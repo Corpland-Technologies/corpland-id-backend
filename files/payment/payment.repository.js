@@ -1,42 +1,42 @@
-const { Device } = require("./device.model");
+const { Payment } = require("./payment.model");
 const mongoose = require("mongoose");
 
-class DeviceRepository {
+class PaymentRepository {
   static async create(payload) {
-    return Device.create({ ...payload });
+    return Payment.create({ ...payload });
   }
 
-  static async fetchAllDevices() {
-    return Device.find();
+  static async fetchAllPayments() {
+    return Payment.find();
   }
 
   static async fetchOne(payload) {
-    return Device.findOne({ ...payload });
+    return Payment.findOne({ ...payload });
   }
 
-  static async fetchDeviceByParams(payload) {
+  static async fetchPaymentByParams(payload) {
     const { limit, skip, sort, search, from, to, ...restOfPayload } = payload;
 
     let query = {};
     let range = {};
 
-    const device = await Device.find({ ...range, ...query, ...restOfPayload })
+    const payment = await Payment.find({ ...range, ...query, ...restOfPayload })
       .sort(sort)
       .skip(skip)
       .limit(limit);
-    return device;
+    return payment;
   }
 
   static async fetch(payload, select) {
-    return Device.find({ ...payload }).select(select);
+    return Payment.find({ ...payload }).select(select);
   }
 
   static async fetchById(id) {
-    const device = await Device.findById(id);
-    return device;
+    const payment = await Payment.findById(id);
+    return payment;
   }
-  static async updateDevice(payload, update) {
-    const device = await Device.findOneAndUpdate(
+  static async updatePayment(payload, update) {
+    const payment = await Payment.findOneAndUpdate(
       {
         ...payload,
       },
@@ -44,17 +44,17 @@ class DeviceRepository {
       { new: true, runValidators: true } //returns details about the update
     );
 
-    return device;
+    return payment;
   }
 
-  static async deleteDevice(payload) {
-    const device = await Device.findOneAndUpdate(
+  static async deletePayment(payload) {
+    const payment = await Payment.findOneAndUpdate(
       { ...payload },
       { isDelete: true },
       { new: true }
     );
 
-    return device;
+    return payment;
   }
 
   // static async search(query) {
@@ -64,7 +64,7 @@ class DeviceRepository {
 
   //   let extraParams = {};
 
-  //   const results = await Device.find({
+  //   const results = await Payment.find({
   //     ...extraParams,
   //     receiverName: { $regex: search, $options: "i" },
   //   });
@@ -73,4 +73,4 @@ class DeviceRepository {
   // }
 }
 
-module.exports = { DeviceRepository };
+module.exports = { PaymentRepository };

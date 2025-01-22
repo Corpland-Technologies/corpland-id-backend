@@ -2,10 +2,10 @@ const { BAD_REQUEST, SUCCESS } = require("../../constants/statusCode");
 const { responseHandler } = require("../../core/response");
 const { manageAsyncOps, fileModifier } = require("../../utils");
 const { CustomError } = require("../../utils/errors");
-const { SessionService } = require("./session.service");
+const { PaymentService } = require("./payment.service");
 
-const createSessionController = async (req, res, next) => {
-  const [error, data] = await manageAsyncOps(SessionService.createSession(req));
+const createPaymentController = async (req, res, next) => {
+  const [error, data] = await manageAsyncOps(PaymentService.createPayment(req));
   console.log("error", error);
   if (error) return console.log(error);
 
@@ -15,8 +15,8 @@ const createSessionController = async (req, res, next) => {
   return responseHandler(res, SUCCESS, data);
 };
 
-const getAllSessionsController = async (req, res, next) => {
-  const [error, data] = await manageAsyncOps(SessionService.getAllSessions());
+const getAllPaymentsController = async (req, res, next) => {
+  const [error, data] = await manageAsyncOps(PaymentService.getAllPayments());
 
   if (error) return next(error);
 
@@ -26,9 +26,9 @@ const getAllSessionsController = async (req, res, next) => {
   return responseHandler(res, SUCCESS, data);
 };
 
-const getSessionController = async (req, res, next) => {
+const getPaymentController = async (req, res, next) => {
   const [error, data] = await manageAsyncOps(
-    SessionService.getSession(req.query, res.locals.jwt)
+    PaymentService.getPayment(req.query, res.locals.jwt)
   );
   console.log("error", error);
   if (error) return next(error);
@@ -39,9 +39,9 @@ const getSessionController = async (req, res, next) => {
   return responseHandler(res, SUCCESS, data);
 };
 
-const updateSessionController = async (req, res, next) => {
+const updatePaymentController = async (req, res, next) => {
   const [error, data] = await manageAsyncOps(
-    SessionService.updateSession(req.params.id, req.body)
+    PaymentService.updatePayment(req.params.id, req.body)
   );
 
   if (error) return next(error);
@@ -52,9 +52,9 @@ const updateSessionController = async (req, res, next) => {
   return responseHandler(res, SUCCESS, data);
 };
 
-const revokeSessionController = async (req, res, next) => {
+const deletePaymentController = async (req, res, next) => {
   const [error, data] = await manageAsyncOps(
-    SessionService.revokeSession(req.params.id)
+    PaymentService.deletePayment(req.params.id)
   );
 
   if (error) return next(error);
@@ -65,36 +65,24 @@ const revokeSessionController = async (req, res, next) => {
   return responseHandler(res, SUCCESS, data);
 };
 
-const revokeAllSessionsController = async (req, res, next) => {
+const verifyPaymentController = async (req, res, next) => {
   const [error, data] = await manageAsyncOps(
-    SessionService.revokeAllSessions(req.params.id)
+    PaymentService.verifyPayment(req.params.reference)
   );
 
   if (error) return next(error);
 
-  if (!data.success)
-    return next(new CustomError(data.message, BAD_REQUEST, data));
-
-  return responseHandler(res, SUCCESS, data);
-};
-
-const refreshTokenController = async (req, res, next) => {
-  const [error, data] = await manageAsyncOps(SessionService.refreshToken(req));
-
-  if (error) return console.log(error);
-
-  if (!data.success)
+  if (!data.success) 
     return next(new CustomError(data.message, BAD_REQUEST, data));
 
   return responseHandler(res, SUCCESS, data);
 };
 
 module.exports = {
-  createSessionController,
-  getSessionController,
-  updateSessionController,
-  revokeSessionController,
-  getAllSessionsController,
-  revokeAllSessionsController,
-  refreshTokenController,
+  createPaymentController,
+  getPaymentController,
+  updatePaymentController,
+  deletePaymentController,
+  getAllPaymentsController,
+  verifyPaymentController,
 };
