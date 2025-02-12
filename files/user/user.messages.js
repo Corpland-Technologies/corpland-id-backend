@@ -28,4 +28,5 @@ module.exports.userMessages = {
   OTP_VERIFIED: "Verification code verified successfully",
   PASSWORD_RESET_FAILED: "Failed to reset password",
   PASSWORD_RESET_SUCCESS: "Password reset successfully",
+  USERS_FETCHED: "Users successfully fetched",
 };

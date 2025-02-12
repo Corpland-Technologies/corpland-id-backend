@@ -6,7 +6,7 @@ const { SUCCESS, BAD_REQUEST } = require("../../constants/statusCode");
 
 const userSignUpController = async (req, res, next) => {
   const [error, data] = await manageAsyncOps(
-    UserService.userSignUpService(req.body)
+    UserService.userSignUpService(req.body, res)
   );
 
   if (error) return next(error);
@@ -18,7 +18,7 @@ const userSignUpController = async (req, res, next) => {
 
 const userLogin = async (req, res, next) => {
   const [error, data] = await manageAsyncOps(
-    UserService.userLoginService(req.body)
+    UserService.userLoginService(req.body, res)
   );
   console.log("err", error);
 
@@ -125,7 +125,7 @@ const forgotPasswordController = async (req, res, next) => {
     UserService.forgotPasswordService(req.body)
   );
 
-  if (error) return console.log(error);
+  if (error) return next(error);
 
   if (!data.SUCCESS)
     return next(new CustomError(data.message, BAD_REQUEST, data));
@@ -159,6 +159,18 @@ const resetPasswordController = async (req, res, next) => {
   return responseHandler(res, SUCCESS, data);
 };
 
+const getAllUsersController = async (req, res, next) => {
+  const [error, data] = await manageAsyncOps(
+    UserService.getAllUsersService(req.query)
+  );
+
+  if (error) return next(error);
+
+  if (!data.SUCCESS) return next(new CustomError(data.message, 400, data));
+
+  return responseHandler(res, SUCCESS, data);
+};
+
 module.exports = {
   userSignUpController,
   userLogin,
@@ -173,4 +185,5 @@ module.exports = {
   forgotPasswordController,
   verifyResetCodeController,
   resetPasswordController,
+  getAllUsersController,
 };

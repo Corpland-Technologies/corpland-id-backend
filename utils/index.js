@@ -3,16 +3,21 @@ const { PAGE_LENGTH } = require("../constants/index");
 const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
 const { RedisClient } = require("./redis");
+const { config } = require("../core/config");
 
 const COUNTRY_CODE = "234";
 
-const tokenHandler = async (payload) => {
-  try {
-    const token = jwt.sign({ ...payload }, process.env.JWT_SECRET);
-    return { token };
-  } catch (error) {
-    throw new Error("Unable to generate token.");
-  }
+const tokenHandler = {
+  access: async (payload) => {
+    return jwt.sign({ ...payload }, config.JWT_ACCESS_SECRET, {
+      expiresIn: "15m",
+    });
+  },
+  refreshToken: async (payload) => {
+    return jwt.sign({ ...payload }, config.JWT_REFRESH_SECRET, {
+      expiresIn: "7d",
+    });
+  },
 };
 
 const adminVerifier = (req, res, next) => {
@@ -151,7 +156,7 @@ const sanitizePhoneNumber = (phone) => {
 
 const verifyToken = async (token) => {
   try {
-    return jwt.verify(token, process.env.JWT_SECRET);
+    return jwt.verify(token, config.JWT_ACCESS_SECRET);
   } catch (error) {
     throw new Error("Unable to verify token.");
   }

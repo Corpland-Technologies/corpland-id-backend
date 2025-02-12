@@ -1,0 +1,15 @@
+module.exports.SessionMessages = {
+  SESSION_SUCCESS: "Session created successfully",
+  SESSION_FAILURE: "Unable to create session",
+  FETCH_ERROR: "Unable to fetch session",
+  FETCH_SUCCESS: "Session successfully fetched",
+  NOT_FOUND: "Session not found",
+  EXIST: "Session already exist",
+  INVALID: "Session is invalid",
+  REQUIRED: "Session is required",
+  UPDATE_ERROR: "Unable to update session",
+  UPDATE: "Session update successful",
+  DELETE: "Session deleted successfully",
+  DELETE_ERROR: "Unable to delete session successfully",
+  lOGOUT_FAILURE: "Unable to log out",
+};

@@ -2,7 +2,7 @@ const { SUCCESS, BAD_REQUEST } = require("../../../constants/statusCode");
 const { responseHandler } = require("../../../core/response");
 const { manageAsyncOps } = require("../../../utils");
 const { CustomError } = require("../../../utils/errors");
-const AuthService = require("../auth.service");
+const { AuthService } = require("../auth.service");
 
 const sendOtpController = async (req, res, next) => {
   const [error, data] = await manageAsyncOps(AuthService.sendOtp(req.body));
@@ -94,7 +94,7 @@ const logoutController = async (req, res, next) => {
     AuthService.userLogOut(req.headers.authorization)
   );
 
-  if (error) return next(error);
+  if (error) return console.log(error);
 
   if (!data.success)
     return next(new CustomError(data.message, BAD_REQUEST, data));

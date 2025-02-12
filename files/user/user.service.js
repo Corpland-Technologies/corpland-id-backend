@@ -14,9 +14,10 @@ const { AuthMessages } = require("../auth/auth.messages");
 const { User } = require("./user.model");
 const { AuthService } = require("../auth/auth.service");
 const { RedisClient } = require("../../utils/redis");
+const { SessionService } = require("../session/session.service");
 
 class UserService {
-  static async userSignUpService(body) {
+  static async userSignUpService(body, res) {
     const user = await UserRepository.fetchUser({
       email: body.email,
     });
@@ -40,21 +41,41 @@ class UserService {
       return { SUCCESS: false, message: userMessages.USER_NOT_CREATED };
     }
 
-    const token = await tokenHandler({
+    const accessToken = await tokenHandler.access({
       name: signUp.name,
       email: signUp.email,
       _id: signUp._id,
     });
+
+    const refreshToken = await tokenHandler.refreshToken({
+      name: signUp.name,
+      email: signUp.email,
+      _id: signUp._id,
+    });
+
+    await SessionService.createSession({
+      body: {
+        token: refreshToken,
+        userId: signUp._id,
+      },
+    });
+
+    res.cookie("refreshToken", refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "Strict",
+    });
+
     signUp.password = undefined;
 
     return {
       SUCCESS: true,
       message: userMessages.USER_CREATED,
-      data: { user: signUp, ...token },
+      data: { user: signUp, token: accessToken },
     };
   }
 
-  static async userLoginService(body) {
+  static async userLoginService(body, res) {
     const user = await UserRepository.fetchUser({
       email: body.email,
     });
@@ -76,16 +97,37 @@ class UserService {
       return { SUCCESS: false, message: userMessages.LOGIN_ERROR };
     }
 
-    const token = await tokenHandler({
+    // Generate tokens after successful login
+    const accessToken = await tokenHandler.access({
       name: user.name,
       email: user.email,
       _id: user._id,
     });
+
+    const refreshToken = await tokenHandler.refreshToken({
+      name: user.name,
+      email: user.email,
+      _id: user._id,
+    });
+
+    await SessionService.createSession({
+      body: {
+        token: refreshToken,
+        userId: user._id,
+      },
+    });
+
+    res.cookie("refreshToken", refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "Strict",
+    });
+
     user.password = undefined;
     return {
       SUCCESS: true,
       message: userMessages.USER_FOUND,
-      data: { user, ...token },
+      data: { user, token: accessToken },
     };
   }
 
@@ -314,6 +356,9 @@ class UserService {
 
   static async resetPasswordService(body) {
     const { email, newPassword } = body;
+    console.log("body", body);
+    console.log("email", email);
+    console.log("newPassword", newPassword);
 
     const user = await UserRepository.fetchUser({ email });
 
@@ -336,6 +381,41 @@ class UserService {
     await RedisClient.deleteCache(`OTP:${email}`);
 
     return { SUCCESS: true, message: userMessages.PASSWORD_RESET_SUCCESS };
+  }
+
+  static async getAllUsersService(query = {}) {
+    const { error, params, limit, skip, sort } = queryConstructor(
+      query,
+      "createdAt",
+      "User"
+    );
+    if (error) return { success: false, message: error };
+
+    const users = await UserRepository.findUserParams({
+      ...params,
+      limit,
+      skip,
+      sort,
+    });
+
+    const count = users.length;
+
+    if (users.length < 1)
+      return { SUCCESS: false, message: userMessages.USER_NOT_FOUND };
+
+    // Remove password from each user object
+    const sanitizedUsers = users.map((user) => {
+      const userObj = user.toObject();
+      delete userObj.password;
+      return userObj;
+    });
+
+    return {
+      SUCCESS: true,
+      message: userMessages.USERS_FETCHED,
+      data: sanitizedUsers,
+      count,
+    };
   }
 }
 

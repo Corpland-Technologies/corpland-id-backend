@@ -15,6 +15,7 @@ const {
   forgotPasswordController,
   verifyResetCodeController,
   resetPasswordController,
+  getAllUsersController,
 } = require("./user.controller");
 
 const { checkSchema } = require("express-validator");
@@ -29,6 +30,7 @@ userRoute.post("/verify-email", verifyEmailController);
 userRoute.post("/forgot-password", forgotPasswordController);
 userRoute.post("/verify-reset-code", verifyResetCodeController);
 userRoute.post("/reset-password", resetPasswordController);
+userRoute.get("/all", getAllUsersController);
 
 userRoute.use(isAuthenticated);
 
