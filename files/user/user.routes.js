@@ -16,6 +16,7 @@ const {
   verifyResetCodeController,
   resetPasswordController,
   getAllUsersController,
+  requestAccountDeletionController,
 } = require("./user.controller");
 
 const { checkSchema } = require("express-validator");
@@ -42,5 +43,6 @@ userRoute.get("/", getUserController);
 userRoute.get("/me", getLoggedInUserController);
 userRoute.put("/delete/:id", deleteUserController);
 userRoute.put("/image", uploadManager("image").single("image"), imageUpload);
+userRoute.delete("/request-deletion", requestAccountDeletionController);
 
 module.exports = userRoute;

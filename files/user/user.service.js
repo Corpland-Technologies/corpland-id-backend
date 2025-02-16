@@ -23,6 +23,9 @@ class UserService {
     });
 
     if (user) {
+      if (user.isDelete) {
+        return { SUCCESS: false, message: userMessages.SOFTDELETE };
+      }
       return { SUCCESS: false, message: userMessages.USER_EXISTS };
     }
 
@@ -87,9 +90,10 @@ class UserService {
       };
     }
 
-    //confirm if user has been deleted
-    if (user.isDelete)
+    // Confirm if user has been deleted
+    if (user.isDelete) {
       return { SUCCESS: false, message: userMessages.SOFTDELETE };
+    }
 
     const passwordCheck = await verifyPassword(body.password, user.password);
 
@@ -415,6 +419,34 @@ class UserService {
       message: userMessages.USERS_FETCHED,
       data: sanitizedUsers,
       count,
+    };
+  }
+
+  static async requestAccountDeletion(body, userPayload) {
+    const user = await UserRepository.fetchUser({
+      _id: new mongoose.Types.ObjectId(userPayload._id),
+    });
+
+    if (!user) return { SUCCESS: false, message: userMessages.USER_NOT_FOUND };
+
+    // Mark the user as deleted
+    const deleteUser = await UserRepository.updateUserById(user._id, {
+      isDelete: true,
+    });
+
+    if (!deleteUser) {
+      return { SUCCESS: false, message: userMessages.UPDATE_PROFILE_FAILURE };
+    }
+
+    await sendMailNotification(
+      user.email,
+      `Account Deletion Status`,
+      { name: user.name },
+      "ACCOUNT_DELETION"
+    );
+    return {
+      SUCCESS: true,
+      message: userMessages.UPDATE_PROFILE_SUCCESS,
     };
   }
 }

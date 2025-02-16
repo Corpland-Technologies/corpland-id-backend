@@ -171,6 +171,21 @@ const getAllUsersController = async (req, res, next) => {
   return responseHandler(res, SUCCESS, data);
 };
 
+const requestAccountDeletionController = async (req, res, next) => {
+  const [error, data] = await manageAsyncOps(
+    UserService.requestAccountDeletion(req.body, res.locals.jwt)
+  );
+
+  if (error) return next(error);
+
+  if (!data.SUCCESS) return next(new CustomError(data.message, 400, data));
+
+  // Log the user out by clearing the refresh token cookie
+  res.clearCookie("refreshToken");
+
+  return responseHandler(res, SUCCESS, data);
+};
+
 module.exports = {
   userSignUpController,
   userLogin,
@@ -186,4 +201,5 @@ module.exports = {
   verifyResetCodeController,
   resetPasswordController,
   getAllUsersController,
+  requestAccountDeletionController,
 };
