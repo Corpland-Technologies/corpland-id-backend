@@ -43,6 +43,6 @@ userRoute.get("/", getUserController);
 userRoute.get("/me", getLoggedInUserController);
 userRoute.put("/delete/:id", deleteUserController);
 userRoute.put("/image", uploadManager("image").single("image"), imageUpload);
-userRoute.put("/request-deletion", requestAccountDeletionController);
+userRoute.delete("/request-deletion", requestAccountDeletionController);
 
 module.exports = userRoute;
