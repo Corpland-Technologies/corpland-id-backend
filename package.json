@@ -16,6 +16,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+      "husky": "^9.1.7",
     "@sendgrid/mail": "^8.1.0",
     "axios": "^1.6.7",
     "bcrypt": "^5.1.1",
