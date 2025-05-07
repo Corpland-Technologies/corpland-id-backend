@@ -11,7 +11,7 @@ const userSignUpController = async (req, res, next) => {
 
   if (error) return next(error);
 
-  if (!data?.sucess) return next(new CustomError(data.message, 400, data));
+  if (!data?.success) return next(new CustomError(data.message, 400, data));
 
   return responseHandler(res, SUCCESS, data);
 };
