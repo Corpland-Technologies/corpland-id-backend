@@ -466,13 +466,6 @@ class UserService {
 
     if (!user) return { success: false, message: userMessages.USER_NOT_FOUND };
 
-    await sendMailNotification(
-      user.email,
-      body.subject,
-      { name: user.name, body: body.body },
-      "NOTIFICATION"
-    );
-
     const emailNotification = await sendMailNotification(
       user.email,
       body.subject,
