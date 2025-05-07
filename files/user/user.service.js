@@ -164,6 +164,20 @@ class UserService {
     };
   }
 
+  static async getUserById(payload) {
+    const user = await UserRepository.fetchById(payload.id);
+
+    if (!user) {
+      return { success: false, message: userMessages.USER_NOT_FOUND };
+    }
+
+    return {
+      success: true,
+      message: userMessages.USER_FOUND,
+      data: user,
+    };
+  }
+
   static async updateUserService(data) {
     const { body, params } = data;
 
@@ -447,6 +461,45 @@ class UserService {
     return {
       SUCCESS: true,
       message: userMessages.UPDATE_PROFILE_SUCCESS,
+    };
+  }
+
+  static async sendSingleEmailNotification(params, body) {
+    const user = await UserRepository.fetchById(params.id);
+
+    if (!user) return { SUCCESS: false, message: userMessages.USER_NOT_FOUND };
+
+    await sendMailNotification(
+      user.email,
+      body.subject,
+      { name: user.name, body: body.body },
+      "NOTIFICATION"
+    );
+
+    return {
+      SUCCESS: true,
+      message: userMessages.EMAIL_SUCCESS,
+    };
+  }
+
+  static async sendBulkEmailNotification(body) {
+    const users = await UserRepository.fetchAll();
+
+    if (!users)
+      return { SUCCESS: false, message: userMessages.USERS_FETCH_FAILURE };
+
+    for (const user of users) {
+      await sendMailNotification(
+        user.email,
+        body.subject,
+        { name: user.name, body: body.body },
+        "NOTIFICATION"
+      );
+    }
+
+    return {
+      SUCCESS: true,
+      message: userMessages.EMAIL_SUCCESS,
     };
   }
 }
