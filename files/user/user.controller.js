@@ -11,7 +11,7 @@ const userSignUpController = async (req, res, next) => {
 
   if (error) return next(error);
 
-  if (!data?.success) return next(new CustomError(data.message, 400, data));
+  if (!data?.SUCCESS) return next(new CustomError(data.message, 400, data));
 
   return responseHandler(res, SUCCESS, data);
 };
@@ -24,7 +24,7 @@ const userLogin = async (req, res, next) => {
 
   if (error) return next(error);
 
-  if (!data?.success) return next(new CustomError(data.message, 401, data));
+  if (!data?.SUCCESS) return next(new CustomError(data.message, 401, data));
 
   return responseHandler(res, SUCCESS, data);
 };
@@ -35,7 +35,7 @@ const getUserController = async (req, res, next) => {
   );
   if (error) return next(error);
 
-  if (!data.success) return next(new CustomError(data.message, 400, data));
+  if (!data.SUCCESS) return next(new CustomError(data.message, 400, data));
 
   return responseHandler(res, SUCCESS, data);
 };
@@ -47,7 +47,7 @@ const getUserByIdController = async (req, res, next) => {
 
   if (error) return next(error);
 
-  if (!data.success)
+  if (!data.SUCCESS)
     return next(new CustomError(data.message, BAD_REQUEST, data));
 
   return responseHandler(res, SUCCESS, data);
@@ -60,7 +60,7 @@ const sendSingleEmailNotificationController = async (req, res, next) => {
 
   if (error) return console.log(error);
 
-  if (!data.success)
+  if (!data.SUCCESS)
     return next(new CustomError(data.message, BAD_REQUEST, data));
 
   return responseHandler(res, SUCCESS, data);
@@ -73,7 +73,7 @@ const sendBulkEmailNotificationController = async (req, res, next) => {
 
   if (error) return console.log(error);
 
-  if (!data.success)
+  if (!data.SUCCESS)
     return next(new CustomError(data.message, BAD_REQUEST, data));
 
   return responseHandler(res, SUCCESS, data);
@@ -86,7 +86,7 @@ const getLoggedInUserController = async (req, res, next) => {
 
   if (error) return next(error);
 
-  if (!data.success) return next(new CustomError(data.message, 400, data));
+  if (!data.SUCCESS) return next(new CustomError(data.message, 400, data));
 
   return responseHandler(res, SUCCESS, data);
 };
@@ -99,7 +99,7 @@ const updateUserController = async (req, res, next) => {
 
   if (error) return next(error);
 
-  if (!data.success) return next(new CustomError(data.message, 400, data));
+  if (!data.SUCCESS) return next(new CustomError(data.message, 400, data));
 
   return responseHandler(res, SUCCESS, data);
 };
@@ -111,7 +111,7 @@ const changeUserPasswordController = async (req, res, next) => {
   console.log("error", error);
   if (error) return console.log(error);
 
-  if (!data.success) return next(new CustomError(data.message, 400, data));
+  if (!data.SUCCESS) return next(new CustomError(data.message, 400, data));
 
   return responseHandler(res, SUCCESS, data);
 };
@@ -124,7 +124,7 @@ const imageUpload = async (req, res, next) => {
 
   if (error) return next(error);
 
-  if (!data.success) return next(new CustomError(data.message, 400, data));
+  if (!data.SUCCESS) return next(new CustomError(data.message, 400, data));
 
   return responseHandler(res, SUCCESS, data);
 };
@@ -135,7 +135,7 @@ const deleteUserController = async (req, res, next) => {
   );
   if (error) return next(error);
 
-  if (!data.success) return next(new CustomError(data.message, 400, data));
+  if (!data.SUCCESS) return next(new CustomError(data.message, 400, data));
 
   return responseHandler(res, SUCCESS, data);
 };
@@ -145,7 +145,7 @@ const searchUserController = async (req, res, next) => {
 
   if (error) return console.log(error);
 
-  if (!data.success) return next(new CustomError(data.message, 400, data));
+  if (!data.SUCCESS) return next(new CustomError(data.message, 400, data));
 
   return responseHandler(res, SUCCESS, data);
 };
@@ -154,7 +154,7 @@ const verifyEmailController = async (req, res, next) => {
   const [error, data] = await manageAsyncOps(UserService.verifyEmail(req.body));
   if (error) return next(error);
 
-  if (!data.success) return next(new CustomError(data.message, 400, data));
+  if (!data.SUCCESS) return next(new CustomError(data.message, 400, data));
 
   return responseHandler(res, SUCCESS, data);
 };
@@ -166,7 +166,7 @@ const forgotPasswordController = async (req, res, next) => {
 
   if (error) return next(error);
 
-  if (!data.success)
+  if (!data.SUCCESS)
     return next(new CustomError(data.message, BAD_REQUEST, data));
 
   return responseHandler(res, SUCCESS, data);
@@ -179,7 +179,7 @@ const verifyResetCodeController = async (req, res, next) => {
 
   if (error) return next(error);
 
-  if (!data.success)
+  if (!data.SUCCESS)
     return next(new CustomError(data.message, BAD_REQUEST, data));
 
   return responseHandler(res, SUCCESS, data);
@@ -192,7 +192,7 @@ const resetPasswordController = async (req, res, next) => {
 
   if (error) return next(error);
 
-  if (!data.success)
+  if (!data.SUCCESS)
     return next(new CustomError(data.message, BAD_REQUEST, data));
 
   return responseHandler(res, SUCCESS, data);
@@ -205,7 +205,7 @@ const getAllUsersController = async (req, res, next) => {
 
   if (error) return next(error);
 
-  if (!data.success) return next(new CustomError(data.message, 400, data));
+  if (!data.SUCCESS) return next(new CustomError(data.message, 400, data));
 
   return responseHandler(res, SUCCESS, data);
 };
@@ -217,7 +217,7 @@ const requestAccountDeletionController = async (req, res, next) => {
 
   if (error) return next(error);
 
-  if (!data.success) return next(new CustomError(data.message, 400, data));
+  if (!data.SUCCESS) return next(new CustomError(data.message, 400, data));
 
   // Log the user out by clearing the refresh token cookie
   res.clearCookie("refreshToken");

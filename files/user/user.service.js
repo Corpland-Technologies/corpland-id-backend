@@ -21,9 +21,9 @@ class UserService {
 
     if (user) {
       if (user.isDelete) {
-        return { success: false, message: userMessages.SOFTDELETE };
+        return { SUCCESS: false, message: userMessages.SOFTDELETE };
       }
-      return { success: false, message: userMessages.USER_EXISTS };
+      return { SUCCESS: false, message: userMessages.USER_EXISTS };
     }
 
     const password = await hashPassword(body.password);
@@ -38,7 +38,7 @@ class UserService {
     });
 
     if (!sendOtp.success) {
-      return { success: false, message: userMessages.USER_NOT_CREATED };
+      return { SUCCESS: false, message: userMessages.USER_NOT_CREATED };
     }
 
     const accessToken = await tokenHandler.access({
@@ -69,7 +69,7 @@ class UserService {
     signUp.password = undefined;
 
     return {
-      success: true,
+      SUCCESS: true,
       message: userMessages.USER_CREATED,
       data: { user: signUp, token: accessToken },
     };
@@ -82,20 +82,20 @@ class UserService {
 
     if (!user) {
       return {
-        success: false,
+        SUCCESS: false,
         message: userMessages.LOGIN_ERROR,
       };
     }
 
     // Confirm if user has been deleted
     if (user.isDelete) {
-      return { success: false, message: userMessages.SOFTDELETE };
+      return { SUCCESS: false, message: userMessages.SOFTDELETE };
     }
 
     const passwordCheck = await verifyPassword(body.password, user.password);
 
     if (!passwordCheck) {
-      return { success: false, message: userMessages.LOGIN_ERROR };
+      return { SUCCESS: false, message: userMessages.LOGIN_ERROR };
     }
 
     // Generate tokens after successful login
@@ -126,7 +126,7 @@ class UserService {
 
     user.password = undefined;
     return {
-      success: true,
+      SUCCESS: true,
       message: userMessages.USER_FOUND,
       data: { user, token: accessToken },
     };
@@ -138,7 +138,7 @@ class UserService {
       "createdAt",
       "User"
     );
-    if (error) return { success: false, message: error };
+    if (error) return { SUCCESS: false, message: error };
 
     const getUser = await UserRepository.findUserParams({
       ...params,
@@ -151,10 +151,10 @@ class UserService {
     const count = getUser.length;
 
     if (getUser.length < 1)
-      return { success: false, message: userMessages.USER_NOT_FOUND };
+      return { SUCCESS: false, message: userMessages.USER_NOT_FOUND };
 
     return {
-      success: true,
+      SUCCESS: true,
       message: userMessages.USER_FOUND,
       data: getUser,
       count,
@@ -165,11 +165,11 @@ class UserService {
     const user = await UserRepository.fetchById(payload.id);
 
     if (!user) {
-      return { success: false, message: userMessages.USER_NOT_FOUND };
+      return { SUCCESS: false, message: userMessages.USER_NOT_FOUND };
     }
 
     return {
-      success: true,
+      SUCCESS: true,
       message: userMessages.USER_FOUND,
       data: user,
     };
@@ -178,7 +178,7 @@ class UserService {
   static async updateUserService(data) {
     const { body, params } = data;
 
-    // if (data.payload.isDelete) return { success: false, message: userMessages.SOFTDELETE }
+    // if (data.payload.isDelete) return { SUCCESS: false, message: userMessages.SOFTDELETE }
 
     const user = await UserRepository.updateUserById(
       { _id: new mongoose.Types.ObjectId(params.id) },
@@ -187,12 +187,12 @@ class UserService {
 
     if (!user) {
       return {
-        success: false,
+        SUCCESS: false,
         message: userMessages.UPDATE_PROFILE_FAILURE,
       };
     } else {
       return {
-        success: true,
+        SUCCESS: true,
         message: userMessages.UPDATE_PROFILE_SUCCESS,
         user,
       };
@@ -207,16 +207,16 @@ class UserService {
       _id: new mongoose.Types.ObjectId(body.id),
     });
 
-    if (!user) return { success: false, message: AuthMessages.USER_NOT_FOUND };
+    if (!user) return { SUCCESS: false, message: AuthMessages.USER_NOT_FOUND };
 
     const prevPasswordCheck = await verifyPassword(prevPassword, user.password);
     console.log("prev", prevPassword);
     if (!prevPasswordCheck)
-      return { success: false, message: AuthMessages.INCORRECT_PASSWORD };
+      return { SUCCESS: false, message: AuthMessages.INCORRECT_PASSWORD };
 
     if (body.password !== body.confirmPassword) {
       return {
-        success: false,
+        SUCCESS: false,
         message: "Passwords mismatch",
       };
     }
@@ -233,12 +233,12 @@ class UserService {
 
     if (changePassword) {
       return {
-        success: true,
+        SUCCESS: true,
         message: AuthMessages.PASSWORD_RESET_SUCCESS,
       };
     } else {
       return {
-        success: false,
+        SUCCESS: false,
         message: AuthMessages.PASSWORD_RESET_FAILURE,
       };
     }
@@ -248,8 +248,8 @@ class UserService {
     const { image } = data;
 
     const user = await UserRepository.updateUserById(payload._id, { image });
-    if (!user) return { success: false, message: userMessages.UPDATE_ERROR };
-    return { success: true, message: userMessages.UPDATE_SUCCESS };
+    if (!user) return { SUCCESS: false, message: userMessages.UPDATE_ERROR };
+    return { SUCCESS: true, message: userMessages.UPDATE_SUCCESS };
   }
 
   static async getLoggedInUser(userPayload) {
@@ -260,9 +260,9 @@ class UserService {
     });
     getUser.password = undefined;
     if (!getUser)
-      return { success: false, message: userMessages.USER_NOT_FOUND };
+      return { SUCCESS: false, message: userMessages.USER_NOT_FOUND };
 
-    return { success: true, message: userMessages.USER_FOUND, data: getUser };
+    return { SUCCESS: true, message: userMessages.USER_FOUND, data: getUser };
   }
 
   static async deleteUserService(data) {
@@ -273,10 +273,10 @@ class UserService {
     });
 
     if (!deleteUser)
-      return { success: false, message: userMessages.UPDATE_PROFILE_FAILURE };
+      return { SUCCESS: false, message: userMessages.UPDATE_PROFILE_FAILURE };
 
     return {
-      success: true,
+      SUCCESS: true,
       message: userMessages.UPDATE_PROFILE_SUCCESS,
       deleteUser,
     };
@@ -289,7 +289,7 @@ class UserService {
       "User"
     );
 
-    if (error) return { success: false, message: error };
+    if (error) return { SUCCESS: false, message: error };
 
     const userData = await UserRepository.search({
       ...params,
@@ -299,9 +299,9 @@ class UserService {
     });
 
     if (userData.length < 1)
-      return { success: false, message: userMessages.USER_NOT_FOUND, data: [] };
+      return { SUCCESS: false, message: userMessages.USER_NOT_FOUND, data: [] };
 
-    return { success: true, message: userMessages.USER_FOUND, data: userData };
+    return { SUCCESS: true, message: userMessages.USER_FOUND, data: userData };
   }
 
   static async verifyEmail(payload) {
@@ -311,7 +311,7 @@ class UserService {
     const verifyOtp = await AuthService.verifyOtp({ otp, userDetail: email });
 
     if (!verifyOtp.success) {
-      return { success: false, message: userMessages.VERIFIED_EMAIL_FAILURE };
+      return { SUCCESS: false, message: userMessages.VERIFIED_EMAIL_FAILURE };
     }
 
     // Update user verification status
@@ -321,13 +321,13 @@ class UserService {
     );
 
     if (!user) {
-      return { success: false, message: userMessages.USER_NOT_FOUND };
+      return { SUCCESS: false, message: userMessages.USER_NOT_FOUND };
     }
 
     // Clear the OTP from Redis after successful verification
     await RedisClient.deleteCache(`OTP:${email}`);
 
-    return { success: true, message: userMessages.VERIFIED_EMAIL };
+    return { SUCCESS: true, message: userMessages.VERIFIED_EMAIL };
   }
 
   static async forgotPasswordService(body) {
@@ -336,7 +336,7 @@ class UserService {
     const user = await UserRepository.fetchUser({ email });
 
     if (!user) {
-      return { success: false, message: userMessages.USER_NOT_FOUND };
+      return { SUCCESS: false, message: userMessages.USER_NOT_FOUND };
     }
 
     // Send verification OTP
@@ -348,10 +348,10 @@ class UserService {
     });
 
     if (!sendOtp.success) {
-      return { success: false, message: userMessages.OTP_SEND_FAILED };
+      return { SUCCESS: false, message: userMessages.OTP_SEND_FAILED };
     }
 
-    return { success: true, message: userMessages.OTP_SENT };
+    return { SUCCESS: true, message: userMessages.OTP_SENT };
   }
 
   static async verifyResetCodeService(body) {
@@ -363,10 +363,10 @@ class UserService {
     });
 
     if (!verifyOtp.success) {
-      return { success: false, message: userMessages.INVALID_OTP };
+      return { SUCCESS: false, message: userMessages.INVALID_OTP };
     }
 
-    return { success: true, message: userMessages.OTP_VERIFIED };
+    return { SUCCESS: true, message: userMessages.OTP_VERIFIED };
   }
 
   static async resetPasswordService(body) {
@@ -378,7 +378,7 @@ class UserService {
     const user = await UserRepository.fetchUser({ email });
 
     if (!user) {
-      return { success: false, message: userMessages.USER_NOT_FOUND };
+      return { SUCCESS: false, message: userMessages.USER_NOT_FOUND };
     }
 
     const password = await hashPassword(newPassword);
@@ -389,13 +389,13 @@ class UserService {
     );
 
     if (!updatePassword) {
-      return { success: false, message: userMessages.PASSWORD_RESET_FAILED };
+      return { SUCCESS: false, message: userMessages.PASSWORD_RESET_FAILED };
     }
 
     // Clear the OTP from Redis after successful password reset
     await RedisClient.deleteCache(`OTP:${email}`);
 
-    return { success: true, message: userMessages.PASSWORD_RESET_SUCCESS };
+    return { SUCCESS: true, message: userMessages.PASSWORD_RESET_SUCCESS };
   }
 
   static async getAllUsersService(query = {}) {
@@ -404,7 +404,7 @@ class UserService {
       "createdAt",
       "User"
     );
-    if (error) return { success: false, message: error };
+    if (error) return { SUCCESS: false, message: error };
 
     const users = await UserRepository.findUserParams({
       ...params,
@@ -416,7 +416,7 @@ class UserService {
     const count = users.length;
 
     if (users.length < 1)
-      return { success: false, message: userMessages.USER_NOT_FOUND };
+      return { SUCCESS: false, message: userMessages.USER_NOT_FOUND };
 
     // Remove password from each user object
     const sanitizedUsers = users.map((user) => {
@@ -426,7 +426,7 @@ class UserService {
     });
 
     return {
-      success: true,
+      SUCCESS: true,
       message: userMessages.USERS_FETCHED,
       data: sanitizedUsers,
       count,
@@ -438,7 +438,7 @@ class UserService {
       _id: new mongoose.Types.ObjectId(userPayload._id),
     });
 
-    if (!user) return { success: false, message: userMessages.USER_NOT_FOUND };
+    if (!user) return { SUCCESS: false, message: userMessages.USER_NOT_FOUND };
 
     // Mark the user as deleted
     const deleteUser = await UserRepository.updateUserById(user._id, {
@@ -446,7 +446,7 @@ class UserService {
     });
 
     if (!deleteUser) {
-      return { success: false, message: userMessages.UPDATE_PROFILE_FAILURE };
+      return { SUCCESS: false, message: userMessages.UPDATE_PROFILE_FAILURE };
     }
 
     await sendMailNotification(
@@ -456,7 +456,7 @@ class UserService {
       "ACCOUNT_DELETION"
     );
     return {
-      success: true,
+      SUCCESS: true,
       message: userMessages.UPDATE_PROFILE_SUCCESS,
     };
   }
@@ -464,7 +464,7 @@ class UserService {
   static async sendSingleEmailNotification(params, body) {
     const user = await UserRepository.fetchById(params.id);
 
-    if (!user) return { success: false, message: userMessages.USER_NOT_FOUND };
+    if (!user) return { SUCCESS: false, message: userMessages.USER_NOT_FOUND };
 
     const emailNotification = await sendMailNotification(
       user.email,
@@ -474,10 +474,10 @@ class UserService {
     );
 
     if (!emailNotification)
-      return { success: false, message: userMessages.EMAIL_FAILURE };
+      return { SUCCESS: false, message: userMessages.EMAIL_FAILURE };
 
     return {
-      success: true,
+      SUCCESS: true,
       message: userMessages.EMAIL_SUCCESS,
     };
   }
@@ -486,7 +486,7 @@ class UserService {
     const users = await UserRepository.fetchAll();
 
     if (!users)
-      return { success: false, message: userMessages.USERS_FETCH_FAILURE };
+      return { SUCCESS: false, message: userMessages.USERS_FETCH_FAILURE };
 
     for (const user of users) {
       await sendMailNotification(
@@ -498,7 +498,7 @@ class UserService {
     }
 
     return {
-      success: true,
+      SUCCESS: true,
       message: userMessages.EMAIL_SUCCESS,
     };
   }
