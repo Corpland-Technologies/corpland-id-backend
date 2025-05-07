@@ -58,7 +58,7 @@ const sendSingleEmailNotificationController = async (req, res, next) => {
     UserService.sendSingleEmailNotification(req.params, req.body)
   );
 
-  if (error) return console.log(error);
+  if (error) return next(error);
 
   if (!data.SUCCESS)
     return next(new CustomError(data.message, BAD_REQUEST, data));
@@ -71,7 +71,7 @@ const sendBulkEmailNotificationController = async (req, res, next) => {
     UserService.sendBulkEmailNotification(req.body)
   );
 
-  if (error) return console.log(error);
+  if (error) return next(error);
 
   if (!data.SUCCESS)
     return next(new CustomError(data.message, BAD_REQUEST, data));
@@ -109,7 +109,7 @@ const changeUserPasswordController = async (req, res, next) => {
     UserService.changePassword(req.body)
   );
   console.log("error", error);
-  if (error) return console.log(error);
+  if (error) return next(error);
 
   if (!data.SUCCESS) return next(new CustomError(data.message, 400, data));
 
@@ -143,7 +143,7 @@ const deleteUserController = async (req, res, next) => {
 const searchUserController = async (req, res, next) => {
   const [error, data] = await manageAsyncOps(UserService.searchUser(req.query));
 
-  if (error) return console.log(error);
+  if (error) return next(error);
 
   if (!data.SUCCESS) return next(new CustomError(data.message, 400, data));
 
