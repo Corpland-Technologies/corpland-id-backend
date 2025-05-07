@@ -7,8 +7,16 @@ class UserRepository {
     return newUser.save();
   }
 
+  static async fetchAll() {
+    return User.find();
+  }
+
   static async fetchUser(body) {
     return User.findOne({ ...body });
+  }
+
+  static async fetchById(id) {
+    return await User.findById(id);
   }
 
   static async findUserParams(userPayload, select) {

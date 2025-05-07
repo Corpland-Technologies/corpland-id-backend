@@ -1,6 +1,8 @@
 module.exports.userMessages = {
   USER_NOT_CREATED: "User could not be created",
   UNVERIFIED_EMAIL: "Please verify your email",
+  EMAIL_SUCCESS: "Email sent successfully",
+  EMAIL_FAILURE: "An error occurred sending email",
   VERIFIED_EMAIL: "Email successfully verified",
   VERIFIED_EMAIL_FAILURE:
     "Incorrect verification code, Check your email and try again",
@@ -29,4 +31,5 @@ module.exports.userMessages = {
   PASSWORD_RESET_FAILED: "Failed to reset password",
   PASSWORD_RESET_SUCCESS: "Password reset successfully",
   USERS_FETCHED: "Users successfully fetched",
+  USERS_FETCH_FAILURE: "An error occurred fetching users",
 };
