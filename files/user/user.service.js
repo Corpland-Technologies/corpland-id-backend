@@ -161,20 +161,6 @@ class UserService {
     };
   }
 
-  static async getUserById(payload) {
-    const user = await UserRepository.fetchById(payload.id);
-
-    if (!user) {
-      return { SUCCESS: false, message: userMessages.USER_NOT_FOUND };
-    }
-
-    return {
-      SUCCESS: true,
-      message: userMessages.USER_FOUND,
-      data: user,
-    };
-  }
-
   static async updateUserService(data) {
     const { body, params } = data;
 

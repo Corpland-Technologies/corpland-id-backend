@@ -15,10 +15,6 @@ class UserRepository {
     return User.findOne({ ...body });
   }
 
-  static async fetchById(id) {
-    return await User.findById(id);
-  }
-
   static async findUserParams(userPayload, select) {
     const { limit, skip, sort, ...restOfPayload } = userPayload;
     const user = await User.find({ ...restOfPayload, isDelete: false })
