@@ -36,7 +36,6 @@ userRoute.post("/verify-reset-code", verifyResetCodeController);
 userRoute.post("/reset-password", resetPasswordController);
 userRoute.post("/email", sendBulkEmailNotificationController);
 userRoute.post("/email/:id", sendSingleEmailNotificationController);
-userRoute.get("/:id", getUserByIdController);
 userRoute.get("/all", getAllUsersController);
 
 userRoute.use(isAuthenticated);
@@ -45,7 +44,7 @@ userRoute.use(isAuthenticated);
 userRoute.get("/search", searchUserController);
 userRoute.put("/update/:id", updateUserController);
 userRoute.put("/password", changeUserPasswordController);
-userRoute.get("/me/logged-in", getLoggedInUserController);
+userRoute.get("/me", getLoggedInUserController);
 userRoute.get("/", getUserController);
 userRoute.put("/delete/:id", deleteUserController);
 userRoute.put("/image", uploadManager("image").single("image"), imageUpload);

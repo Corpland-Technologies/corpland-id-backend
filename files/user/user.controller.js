@@ -40,19 +40,6 @@ const getUserController = async (req, res, next) => {
   return responseHandler(res, SUCCESS, data);
 };
 
-const getUserByIdController = async (req, res, next) => {
-  const [error, data] = await manageAsyncOps(
-    UserService.getUserById(req.params)
-  );
-
-  if (error) return next(error);
-
-  if (!data.SUCCESS)
-    return next(new CustomError(data.message, BAD_REQUEST, data));
-
-  return responseHandler(res, SUCCESS, data);
-};
-
 const sendSingleEmailNotificationController = async (req, res, next) => {
   const [error, data] = await manageAsyncOps(
     UserService.sendSingleEmailNotification(req.params, req.body)
@@ -241,7 +228,6 @@ module.exports = {
   resetPasswordController,
   getAllUsersController,
   requestAccountDeletionController,
-  getUserByIdController,
   sendSingleEmailNotificationController,
   sendBulkEmailNotificationController,
 };
