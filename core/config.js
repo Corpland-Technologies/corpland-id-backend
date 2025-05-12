@@ -17,4 +17,6 @@ module.exports.config = {
   PAYSTACK_KEY: process.env.PAYSTACK_SK_KEY,
   JWT_ACCESS_SECRET: process.env.JWT_ACCESS_SECRET,
   JWT_REFRESH_SECRET: process.env.JWT_REFRESH_SECRET,
+  FRONTEND_URL: process.env.FRONTEND_URL,
+  PAYSTACK_CALLBACK_URL: process.env.PAYSTACK_CALLBACK_URL,
 };

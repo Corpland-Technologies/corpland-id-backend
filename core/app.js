@@ -8,6 +8,7 @@ const emailValidation = require("./emailCheck");
 const routes = require("./routes");
 const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
+const { config } = require("./config");
 
 const app = express();
 
@@ -17,7 +18,12 @@ const application = () => {
   app.use(express.urlencoded({ extended: false }));
   app.use(helmet());
   app.use(compression());
-  app.use(cors());
+  app.use(
+    cors({
+      origin: [config.FRONTEND_URL, config.PAYSTACK_CALLBACK_URL],
+      credentials: true,
+    })
+  );
   app.use(emailValidation);
   app.use(cookieParser());
 
