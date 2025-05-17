@@ -68,7 +68,7 @@ const sendBulkEmailNotificationController = async (req, res, next) => {
 
 const getLoggedInUserController = async (req, res, next) => {
   const [error, data] = await manageAsyncOps(
-    UserService.getLoggedInUser(res.locals.jwt, res)
+    UserService.getLoggedInUser(res.locals.jwt)
   );
 
   if (error) return next(error);

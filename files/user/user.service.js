@@ -238,7 +238,7 @@ class UserService {
     return { SUCCESS: true, message: userMessages.UPDATE_SUCCESS };
   }
 
-  static async getLoggedInUser(userPayload, res) {
+  static async getLoggedInUser(userPayload) {
     const { _id } = userPayload;
 
     const getUser = await UserRepository.fetchUser({
@@ -247,18 +247,6 @@ class UserService {
     getUser.password = undefined;
     if (!getUser)
       return { SUCCESS: false, message: userMessages.USER_NOT_FOUND };
-
-    const refreshToken = await tokenHandler.refreshToken({
-      name: user.name,
-      email: user.email,
-      _id: user._id,
-    });
-
-    res.cookie("refreshToken", refreshToken, {
-      httpOnly: true,
-      secure: true,
-      sameSite: "Strict",
-    });
 
     return { SUCCESS: true, message: userMessages.USER_FOUND, data: getUser };
   }
