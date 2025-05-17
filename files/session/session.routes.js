@@ -8,7 +8,7 @@ const {
   revokeSessionController,
   revokeAllSessionsController,
   refreshTokenController,
-  logoutUserController
+  logoutUserController,
 } = require("./session.controller");
 
 //authenticated routes go below here

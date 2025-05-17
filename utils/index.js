@@ -5,17 +5,17 @@ const bcrypt = require("bcrypt");
 const { RedisClient } = require("./redis");
 const { config } = require("../core/config");
 
-const COUNTRY_CODE = "234";
+const COUNTRY_CODE = "233";
 
 const tokenHandler = {
   access: async (payload) => {
     return jwt.sign({ ...payload }, config.JWT_ACCESS_SECRET, {
-      expiresIn: "15m",
+      expiresIn: config.TOKEN_EXPIRE_IN,
     });
   },
   refreshToken: async (payload) => {
     return jwt.sign({ ...payload }, config.JWT_REFRESH_SECRET, {
-      expiresIn: "7d",
+      expiresIn: config.TOKEN_EXPIRE_IN,
     });
   },
 };

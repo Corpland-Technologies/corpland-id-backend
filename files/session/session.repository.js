@@ -11,7 +11,7 @@ class SessionRepository {
   }
 
   static async fetchOne(payload) {
-    return Session.findOne({ ...payload });
+    return Session.findOne({ ...payload, isDelete: false });
   }
 
   static async fetchSessionByParams(payload) {
@@ -20,7 +20,12 @@ class SessionRepository {
     let query = {};
     let range = {};
 
-    const session = await Session.find({ ...range, ...query, ...restOfPayload })
+    const session = await Session.find({
+      ...range,
+      ...query,
+      ...restOfPayload,
+      isDelete: false,
+    })
       .sort(sort)
       .skip(skip)
       .limit(limit);
@@ -28,7 +33,7 @@ class SessionRepository {
   }
 
   static async fetch(payload, select) {
-    return Session.find({ ...payload }).select(select);
+    return Session.find({ ...payload, isDelete: false }).select(select);
   }
 
   static async fetchById(id) {
