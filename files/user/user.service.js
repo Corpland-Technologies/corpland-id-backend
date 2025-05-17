@@ -62,8 +62,8 @@ class UserService {
 
     res.cookie("refreshToken", refreshToken, {
       httpOnly: true,
-      secure: true,
-      sameSite: "None",
+      secure: process.env.NODE_ENV === "development",
+      sameSite: "Strict",
     });
 
     signUp.password = undefined;

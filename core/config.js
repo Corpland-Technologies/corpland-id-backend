@@ -19,4 +19,5 @@ module.exports.config = {
   JWT_REFRESH_SECRET: process.env.JWT_REFRESH_SECRET,
   FRONTEND_URL: process.env.FRONTEND_URL,
   PAYSTACK_CALLBACK_URL: process.env.PAYSTACK_CALLBACK_URL,
+  TOKEN_EXPIRE_IN: process.env.TOKEN_EXPIRE_IN,
 };
