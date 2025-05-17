@@ -448,7 +448,9 @@ class UserService {
   }
 
   static async sendSingleEmailNotification(params, body) {
-    const user = await UserRepository.fetchById(params.id);
+    const user = await UserRepository.fetchUser({
+      _id: new mongoose.Types.ObjectId(params.id),
+    });
 
     if (!user) return { SUCCESS: false, message: userMessages.USER_NOT_FOUND };
 

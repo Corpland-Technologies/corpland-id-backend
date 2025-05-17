@@ -45,7 +45,7 @@ const sendSingleEmailNotificationController = async (req, res, next) => {
     UserService.sendSingleEmailNotification(req.params, req.body)
   );
 
-  if (error) return next(error);
+  if (error) return console.log(error);
 
   if (!data.SUCCESS)
     return next(new CustomError(data.message, BAD_REQUEST, data));
@@ -58,7 +58,7 @@ const sendBulkEmailNotificationController = async (req, res, next) => {
     UserService.sendBulkEmailNotification(req.body)
   );
 
-  if (error) return next(error);
+  if (error) return console.log(error);
 
   if (!data.SUCCESS)
     return next(new CustomError(data.message, BAD_REQUEST, data));
