@@ -90,9 +90,7 @@ const refreshTokenController = async (req, res, next) => {
 };
 
 const logoutUserController = async (req, res, next) => {
-  const [error, data] = await manageAsyncOps(
-    SessionService.logoutUser(req, res)
-  );
+  const [error, data] = await manageAsyncOps(SessionService.logoutUser(req));
 
   if (error) return next(error);
 

@@ -10,12 +10,12 @@ const COUNTRY_CODE = "233";
 const tokenHandler = {
   access: async (payload) => {
     return jwt.sign({ ...payload }, config.JWT_ACCESS_SECRET, {
-      expiresIn: config.TOKEN_EXPIRE_IN,
+      expiresIn: "15m",
     });
   },
   refreshToken: async (payload) => {
     return jwt.sign({ ...payload }, config.JWT_REFRESH_SECRET, {
-      expiresIn: config.TOKEN_EXPIRE_IN,
+      expiresIn: "7d",
     });
   },
 };
