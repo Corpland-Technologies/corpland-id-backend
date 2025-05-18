@@ -62,7 +62,7 @@ class UserService {
 
     res.cookie("refreshToken", refreshToken, {
       httpOnly: true,
-      secure: true,
+      secure: process.env.NODE_ENV === "development",
       sameSite: "Strict",
     });
 

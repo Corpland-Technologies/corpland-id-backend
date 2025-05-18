@@ -6,8 +6,8 @@ const { SessionService } = require("./session.service");
 
 const createSessionController = async (req, res, next) => {
   const [error, data] = await manageAsyncOps(SessionService.createSession(req));
-  console.log("error", error);
-  if (error) return console.log(error);
+
+  if (error) return next(error);
 
   if (!data.success)
     return next(new CustomError(data.message, BAD_REQUEST, data));
@@ -30,7 +30,6 @@ const getSessionController = async (req, res, next) => {
   const [error, data] = await manageAsyncOps(
     SessionService.getSession(req.query, res.locals.jwt)
   );
-  console.log("error", error);
   if (error) return next(error);
 
   if (!data.success)
@@ -89,33 +88,10 @@ const refreshTokenController = async (req, res, next) => {
   return responseHandler(res, SUCCESS, data);
 };
 
-const refreshWebTokenController = async (req, res, next) => {
-  const [error, data] = await manageAsyncOps(
-    SessionService.refreshWebToken(req)
-  );
-
-  if (error) return next(error);
-
-  if (!data.success)
-    return next(new CustomError(data.message, BAD_REQUEST, data));
-
-  return responseHandler(res, SUCCESS, data);
-};
-
 const logoutUserController = async (req, res, next) => {
-  const [error, data] = await manageAsyncOps(SessionService.logoutUser(req));
-
-  if (error) return next(error);
-
-  if (!data.success)
-    return next(new CustomError(data.message, BAD_REQUEST, data));
-
-  res.clearCookie("refreshToken");
-  return responseHandler(res, SUCCESS, data);
-};
-
-const logoutWebUserController = async (req, res, next) => {
-  const [error, data] = await manageAsyncOps(SessionService.logoutWebUser(req));
+  const [error, data] = await manageAsyncOps(
+    SessionService.logoutUser(req, res)
+  );
 
   if (error) return next(error);
 
@@ -134,7 +110,5 @@ module.exports = {
   getAllSessionsController,
   revokeAllSessionsController,
   refreshTokenController,
-  refreshWebTokenController,
   logoutUserController,
-  logoutWebUserController,
 };
