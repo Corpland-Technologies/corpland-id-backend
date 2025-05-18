@@ -116,7 +116,7 @@ class SessionService {
     };
   }
   static async refreshToken(payload) {
-    const { refreshToken } = payload.cookies;
+    const { refreshToken } = payload.cookies || payload.body;
 
     if (!refreshToken)
       return { success: false, message: SessionMessages.REQUIRED };
@@ -149,7 +149,7 @@ class SessionService {
   }
 
   static async logoutUser(payload, res) {
-    const { refreshToken } = payload.cookies;
+    const { refreshToken } = payload.cookies || payload.body;
 
     if (!refreshToken) {
       return { success: false, message: SessionMessages.REQUIRED };
