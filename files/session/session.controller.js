@@ -115,7 +115,7 @@ const logoutUserController = async (req, res, next) => {
 };
 
 const logoutWebUserController = async (req, res, next) => {
-  const [error, data] = await manageAsyncOps(SessionService.logoutUser(req));
+  const [error, data] = await manageAsyncOps(SessionService.logoutWebUser(req));
 
   if (error) return next(error);
 
