@@ -115,8 +115,42 @@ class SessionService {
       message: SessionMessages.DELETE,
     };
   }
+
   static async refreshToken(payload) {
-    const { refreshToken } = payload.cookies || payload.body;
+    const { refreshToken } = payload.cookies;
+
+    if (!refreshToken)
+      return { success: false, message: SessionMessages.REQUIRED };
+
+    const storedToken = await SessionRepository.fetchOne({
+      token: refreshToken,
+    });
+
+    if (!storedToken || storedToken.isDelete)
+      return { success: false, message: SessionMessages.INVALID };
+
+    return new Promise((resolve) => {
+      jwt.verify(refreshToken, config.JWT_REFRESH_SECRET, async (err, user) => {
+        if (err)
+          return resolve({ success: false, message: SessionMessages.INVALID });
+
+        const newAccessToken = await tokenHandler.access({
+          name: user.name,
+          email: user.email,
+          _id: user._id,
+        });
+
+        return resolve({
+          success: true,
+          message: SessionMessages.FETCH_SUCCESS,
+          token: newAccessToken,
+        });
+      });
+    });
+  }
+
+  static async refreshWebToken(payload) {
+    const { refreshToken } = payload.params;
 
     if (!refreshToken)
       return { success: false, message: SessionMessages.REQUIRED };
@@ -149,7 +183,31 @@ class SessionService {
   }
 
   static async logoutUser(payload, res) {
-    const { refreshToken } = payload.cookies || payload.body;
+    const { refreshToken } = payload.cookies;
+
+    if (!refreshToken) {
+      return { success: false, message: SessionMessages.REQUIRED };
+    }
+
+    // Remove the refresh token from the repository (assuming you have a method for this)
+    const result = await SessionRepository.deleteSession({
+      token: refreshToken,
+    });
+
+    if (!result) {
+      return { success: false, message: SessionMessages.lOGOUT_FAILURE };
+    }
+
+    res.clearCookie("refreshToken");
+
+    return {
+      success: true,
+      message: "Logged out successfully",
+    };
+  }
+
+  static async logoutWebUser(payload, res) {
+    const { refreshToken } = payload.body;
 
     if (!refreshToken) {
       return { success: false, message: SessionMessages.REQUIRED };

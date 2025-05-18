@@ -81,7 +81,20 @@ const revokeAllSessionsController = async (req, res, next) => {
 const refreshTokenController = async (req, res, next) => {
   const [error, data] = await manageAsyncOps(SessionService.refreshToken(req));
 
-  if (error) return console.log(error);
+  if (error) return next(error);
+
+  if (!data.success)
+    return next(new CustomError(data.message, BAD_REQUEST, data));
+
+  return responseHandler(res, SUCCESS, data);
+};
+
+const refreshWebTokenController = async (req, res, next) => {
+  const [error, data] = await manageAsyncOps(
+    SessionService.refreshWebToken(req)
+  );
+
+  if (error) return next(error);
 
   if (!data.success)
     return next(new CustomError(data.message, BAD_REQUEST, data));
@@ -101,6 +114,18 @@ const logoutUserController = async (req, res, next) => {
   return responseHandler(res, SUCCESS, data);
 };
 
+const logoutWebUserController = async (req, res, next) => {
+  const [error, data] = await manageAsyncOps(SessionService.logoutUser(req));
+
+  if (error) return next(error);
+
+  if (!data.success)
+    return next(new CustomError(data.message, BAD_REQUEST, data));
+
+  res.clearCookie("refreshToken");
+  return responseHandler(res, SUCCESS, data);
+};
+
 module.exports = {
   createSessionController,
   getSessionController,
@@ -109,5 +134,7 @@ module.exports = {
   getAllSessionsController,
   revokeAllSessionsController,
   refreshTokenController,
+  refreshWebTokenController,
   logoutUserController,
+  logoutWebUserController,
 };
