@@ -71,6 +71,7 @@ const getLoggedInUserController = async (req, res, next) => {
     UserService.getLoggedInUser(res.locals.jwt)
   );
 
+  console.log("error", error);
   if (error) return next(error);
 
   if (!data.SUCCESS) return next(new CustomError(data.message, 400, data));
@@ -82,7 +83,6 @@ const updateUserController = async (req, res, next) => {
   const [error, data] = await manageAsyncOps(
     UserService.updateUserService(req)
   );
-  console.log("err", error);
 
   if (error) return next(error);
 

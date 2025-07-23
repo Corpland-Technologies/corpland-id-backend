@@ -214,6 +214,7 @@ const manageAsyncOps = async (fn) => {
     return [null, response];
   } catch (error) {
     const err = error;
+    console.log("error", err);
     return [err, null];
   }
 };
