@@ -8,11 +8,11 @@ class UserRepository {
   }
 
   static async fetchAll() {
-    return User.find();
+    return User.find({ isDelete: false });
   }
 
   static async fetchUser(body) {
-    return User.findOne({ ...body });
+    return User.findOne({ ...body, isDelete: false });
   }
 
   static async findUserParams(userPayload, select) {
@@ -61,6 +61,7 @@ class UserRepository {
     const user = await User.find({
       ...restOfPayload,
       ...query,
+      isDelete: false,
     })
       .sort(sort)
       .skip(skip)
