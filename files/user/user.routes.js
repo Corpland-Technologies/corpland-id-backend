@@ -37,12 +37,12 @@ userRoute.post("/reset-password", resetPasswordController);
 userRoute.post("/email", sendBulkEmailNotificationController);
 userRoute.post("/email/:id", sendSingleEmailNotificationController);
 userRoute.get("/all", getAllUsersController);
+userRoute.put("/update/:id", updateUserController);
 
 userRoute.use(isAuthenticated);
 
 // Routes
 userRoute.get("/search", searchUserController);
-userRoute.put("/update/:id", updateUserController);
 userRoute.put("/password", changeUserPasswordController);
 userRoute.get("/me", getLoggedInUserController);
 userRoute.get("/", getUserController);
