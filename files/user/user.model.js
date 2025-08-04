@@ -24,6 +24,13 @@ const userSchema = new mongoose.Schema(
       default:
         "https://res.cloudinary.com/drwzb6vqn/image/upload/v1728840516/corpland/e5djtacomvpbubqwxhdy.png",
     },
+    gender: {
+      type: String,
+      enum: ["male", "female", "other"],
+    },
+    dateOfBirth: {
+      type: Date,
+    },
     isVerified: {
       type: Boolean,
       default: false,
