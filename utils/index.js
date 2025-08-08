@@ -158,7 +158,7 @@ const verifyToken = async (token) => {
   try {
     return jwt.verify(token, config.JWT_ACCESS_SECRET);
   } catch (error) {
-    throw new Error("Unable to verify token.");
+    throw new Error("Please sign in to continue");
   }
 };
 

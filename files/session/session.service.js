@@ -13,12 +13,12 @@ class SessionService {
       });
 
       if (!session) {
-        return { success: false, message: SessionMessages.DEVICE_FAILURE };
+        return { success: false, message: SessionMessages.SESSION_FAILURE };
       }
 
       return {
         success: true,
-        message: SessionMessages.DEVICE_SUCCESS,
+        message: SessionMessages.SESSION_SUCCESS,
         session,
       };
     } catch (error) {
@@ -59,7 +59,7 @@ class SessionService {
     if (!sessions.length)
       return {
         success: true,
-        message: SessionMessages.DEVICE_NOT_FOUND,
+        message: SessionMessages.SESSION_NOT_FOUND,
         data: [],
       };
 
