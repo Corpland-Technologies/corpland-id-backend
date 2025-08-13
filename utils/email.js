@@ -63,7 +63,7 @@ const sendMailNotification = (
   //smtp
   return new Promise((resolve, reject) => {
     let smtpProtocol = mailer.createTransport({
-      host: "storm.thecloudwebhosts.com", // Replace with your SMTP host
+      host: "prime.thecloudwebhosts.com", // Replace with your SMTP host
       port: 465, // Or 587, depending on your provider
       secure: true, // true for 465, false for 587
       auth: {
