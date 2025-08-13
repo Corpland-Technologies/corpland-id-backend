@@ -60,7 +60,7 @@ class AuthService {
       case "email":
         sendOtp = await sendMailNotification(
           userDetail,
-          `Corpland Accounts OTP`,
+          `Corpland ID OTP`,
           { otp: otp.data, name: name },
           template
         );
