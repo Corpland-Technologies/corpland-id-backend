@@ -6,6 +6,7 @@ module.exports.config = {
   PORT: process.env.PORT,
   MONGO_URL: process.env.MONGO_URL,
   REDIS_URL: process.env.REDIS_URL,
+  ENV: process.env.ENV,
   BASE_URL:
     process.env.BASE_URL || `http://localhost:${process.env.PORT || 5008}`,
   TERMII_BASE_URL: process.env.TERMII_BASE_URL,
