@@ -4,6 +4,7 @@ const { queryConstructor, verifyToken, tokenHandler } = require("../../utils");
 const { SessionMessages } = require("./session.messages");
 const { config } = require("../../core/config");
 const jwt = require("jsonwebtoken");
+const { RedisClient } = require("../../utils/redis");
 
 class SessionService {
   static async createSession(payload) {
@@ -148,14 +149,32 @@ class SessionService {
     });
   }
 
-  static async logoutUser(payload, res) {
-    const { refreshToken } = payload.cookies;
-
-    if (!refreshToken) {
+  static async logoutUser(req, res) {
+    const accessToken = req.headers.authorization;
+    const { refreshToken } = req.cookies;
+    if (!accessToken || !refreshToken) {
       return { success: false, message: SessionMessages.REQUIRED };
     }
 
-    // Remove the refresh token from the repository (assuming you have a method for this)
+    if (accessToken) {
+      // Verify and decode the token
+      const authToken = accessToken.split(" ")[1];
+      const decodedToken = await verifyToken(authToken);
+
+      const now = new Date();
+      const expire = new Date(decodedToken.exp * 1000);
+      const milliseconds = expire.getTime() - now.getTime();
+
+      /* ----------------------------- BlackList Token ---------------------------- */
+      await RedisClient.setCache({
+        key: authToken,
+        value: authToken,
+        expiry: milliseconds,
+      });
+
+      res.clearCookie("refreshToken");
+    }
+
     const result = await SessionRepository.deleteSession({
       token: refreshToken,
     });
@@ -163,9 +182,6 @@ class SessionService {
     if (!result) {
       return { success: false, message: SessionMessages.lOGOUT_FAILURE };
     }
-
-    res.clearCookie("refreshToken");
-
     return {
       success: true,
       message: "Logged out successfully",
