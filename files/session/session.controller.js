@@ -93,6 +93,8 @@ const logoutUserController = async (req, res, next) => {
     SessionService.logoutUser(req, res)
   );
 
+  console.log("logout error", error);
+
   if (error) return next(error);
 
   if (!data.success)

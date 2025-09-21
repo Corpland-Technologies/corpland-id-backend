@@ -12,7 +12,6 @@ const {
 } = require("./session.controller");
 
 //authenticated routes go below here
-// sessionRoute.use(isAuthenticated);
 
 sessionRoute.post("/", createSessionController);
 sessionRoute.get("/", getAllSessionsController);
@@ -21,6 +20,8 @@ sessionRoute.put("/:id", updateSessionController);
 sessionRoute.delete("/:id", revokeSessionController);
 sessionRoute.delete("/revoke-all/:id", revokeAllSessionsController);
 sessionRoute.get("/auth/refresh-token", refreshTokenController);
+
+sessionRoute.use(isAuthenticated);
 
 sessionRoute.post("/logout", logoutUserController);
 

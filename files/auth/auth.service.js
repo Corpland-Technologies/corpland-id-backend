@@ -113,8 +113,6 @@ class AuthService {
 
   // Logout endpoint
   static async userLogOut(token) {
-    console.log(token);
-
     if (token) {
       // Verify and decode the token
       const authToken = token.split(" ")[1];

@@ -20,7 +20,11 @@ const application = () => {
   app.use(compression());
   app.use(
     cors({
-      origin: [config.FRONTEND_URL, config.PAYSTACK_CALLBACK_URL],
+      origin: [
+        config.FRONTEND_URL,
+        config.PAYSTACK_CALLBACK_URL,
+        "http://localhost:3000",
+      ],
       credentials: true,
     })
   );
