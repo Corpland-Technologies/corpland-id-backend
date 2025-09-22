@@ -19,10 +19,10 @@ sessionRoute.get("/:id", getSessionController);
 sessionRoute.put("/:id", updateSessionController);
 sessionRoute.delete("/:id", revokeSessionController);
 sessionRoute.delete("/revoke-all/:id", revokeAllSessionsController);
-sessionRoute.get("/auth/refresh-token", refreshTokenController);
 
 sessionRoute.use(isAuthenticated);
 
+sessionRoute.get("/auth/refresh-token", refreshTokenController);
 sessionRoute.post("/logout", logoutUserController);
 
 module.exports = sessionRoute;
