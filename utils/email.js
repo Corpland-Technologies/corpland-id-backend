@@ -3,6 +3,7 @@ const handlebars = require("handlebars");
 const fs = require("fs");
 const path = require("path");
 const mailer = require("nodemailer");
+const { config } = require("../core/config");
 
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
@@ -62,15 +63,17 @@ const sendMailNotification = (
   //smtp
   return new Promise((resolve, reject) => {
     let smtpProtocol = mailer.createTransport({
-      service: "Gmail",
+      host: "prime.thecloudwebhosts.com", // Replace with your SMTP host
+      port: 465, // Or 587, depending on your provider
+      secure: true, // true for 465, false for 587
       auth: {
-        user: process.env.GMAIL_APP,
-        pass: process.env.GMAIL_APP_KEY,
+        user: config.COMPANY_EMAIL,
+        pass: config.COMPANY_EMAIL_PASSWORD, // Store your password in env
       },
     });
 
     var mailoption = {
-      from: process.env.COMPANY_EMAIL,
+      from: config.COMPANY_EMAIL,
       to: to_email,
       subject: subject,
       html: compiledTemplate(substitutional_parameters),
