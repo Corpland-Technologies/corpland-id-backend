@@ -62,7 +62,7 @@ class UserService {
 
     res.cookie("refreshToken", refreshToken, {
       httpOnly: true,
-      maxAge: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
+      maxAge: 1000 * 60 * 60 * 24 * 365 * 10, // 10 years in milliseconds haha
       secure: process.env.NODE_ENV === "production",
       sameSite: "Strict",
     });
@@ -121,8 +121,8 @@ class UserService {
 
     res.cookie("refreshToken", refreshToken, {
       httpOnly: true,
-      maxAge: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
-      secure:  process.env.NODE_ENV === "production",
+      maxAge: 1000 * 60 * 60 * 24 * 365 * 10, // 10 years in milliseconds haha
+      secure: process.env.NODE_ENV === "production",
       sameSite: "Strict",
     });
 
