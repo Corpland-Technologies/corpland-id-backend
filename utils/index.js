@@ -1,7 +1,7 @@
 const jwt = require("jsonwebtoken");
 const { PAGE_LENGTH } = require("../constants/index");
 const mongoose = require("mongoose");
-const bcrypt = require("bcrypt");
+const bcrypt = require("bcryptjs");
 const { RedisClient } = require("./redis");
 const { config } = require("../core/config");
 
@@ -58,7 +58,7 @@ const queryConstructor = (query, sortBy, item) => {
       params["_id"] = mongoose.Types.ObjectId(Object.values(query)[i]);
     } else if (Object.keys(query)[i] === "userId") {
       params[Object.keys(query)[i]] = new mongoose.Types.ObjectId(
-        Object.values(query)[i]
+        Object.values(query)[i],
       );
     } else {
       params[Object.keys(query)[i]] = Object.values(query)[i];
