@@ -14,9 +14,6 @@ const startServer = () => {
   application();
   connectToDatabase();
 
-  //cron job
-  keepServerAlive();
-
   //redis server
   redis.on("connect", function () {
     console.log("Connected to redis instance");

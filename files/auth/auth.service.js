@@ -43,8 +43,6 @@ class AuthService {
       return { success: false, message: "email or userDetail is required" };
 
     const otp = await this.createOTP(userDetail);
-    console.log("otpppp", otp.data);
-    console.log("otpppp", otp);
 
     // if (!otp.success) return { success: false, message: AuthFailure.SEND_OTP }
 
@@ -60,9 +58,9 @@ class AuthService {
       case "email":
         sendOtp = await sendMailNotification(
           userDetail,
-          `Corpland ID OTP`,
+          `Corpland ID Verification`,
           { otp: otp.data, name: name },
-          template
+          template,
         );
         break;
 
@@ -102,7 +100,7 @@ class AuthService {
 
     const updatePassword = await AdminRepository.updateAdminDetails(
       { email },
-      { password: await hashPassword(newPassword) }
+      { password: await hashPassword(newPassword) },
     );
 
     if (!updatePassword)
