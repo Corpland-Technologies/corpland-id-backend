@@ -9,19 +9,21 @@ class AuthService {
   static async createOTP(userDetail) {
     const otp = AlphaNumeric(4, "numeric");
 
-    // const otp = `1234`
-    console.log("otp", otp);
-    if (!otp) return { success: false, message: "no otp genet" };
+    if (!otp) return { success: false, message: AuthFailure.SEND_OTP };
 
-    //cache otp
-    const cacheOtp = await RedisClient.setCache({
-      key: `OTP:${userDetail}`,
-      value: { otp },
-    });
-    console.log("data", cacheOtp);
+    let cacheOtp;
 
-    // console.log('cacheOtp', cacheOtp.value)
-    // if (!cacheOtp) return { success: false, message: AuthFailure.SEND_OTP }
+    try {
+      cacheOtp = await RedisClient.setCache({
+        key: `OTP:${userDetail}`,
+        value: { otp },
+      });
+    } catch (error) {
+      console.error(`OTP cache failed for ${userDetail}:`, error.message);
+      return { success: false, message: AuthFailure.SEND_OTP };
+    }
+
+    if (!cacheOtp) return { success: false, message: AuthFailure.SEND_OTP };
 
     return {
       success: true,
@@ -30,46 +32,67 @@ class AuthService {
     };
   }
 
-  static async sendOtp(payload) {
-    /* 
-      type: phoneNumber for sms and email for email delivery
-      userDetail: the phone number or email of the recipient
-      length: required length of otp
-      message: message to be delivered with the otp
-    */
+  static async deliverOtp({ type, userDetail, template, name, otp }) {
+    const messageDetails = `Please use this otp ${otp} on the Corpland Technologies Application. It expires in 30 minutes`;
+
+    switch (type) {
+      case "phoneNumber":
+        return sendSms(userDetail, messageDetails);
+      case "email":
+        return sendMailNotification(
+          userDetail,
+          `Corpland ID Verification`,
+          { otp, name },
+          template,
+        );
+      default:
+        return false;
+    }
+  }
+
+  static async issueOtp(payload) {
     const { type, userDetail, template = "VERIFICATION", name } = payload;
 
-    if (!type && !userDetail)
+    if (!type || !userDetail)
+      return { success: false, otpSent: false, message: AuthFailure.SEND_OTP };
+
+    const otp = await this.createOTP(userDetail);
+
+    if (!otp.success) return { success: false, otpSent: false, message: otp.message };
+
+    this.deliverOtp({ type, userDetail, template, name, otp: otp.data }).catch(
+      (error) => {
+        console.error(`OTP delivery failed for ${userDetail}:`, error.message);
+      },
+    );
+
+    return { success: true, otpSent: true, message: AuthSuccess.SEND_OTP };
+  }
+
+  static async sendOtp(payload) {
+    const { type, userDetail, template = "VERIFICATION", name } = payload;
+
+    if (!type || !userDetail)
       return { success: false, message: "email or userDetail is required" };
 
     const otp = await this.createOTP(userDetail);
 
-    // if (!otp.success) return { success: false, message: AuthFailure.SEND_OTP }
-
-    const messageDetails = `Please use this otp ${otp.data} on the Corpland Technologies Application. It expires in 30 minutes`;
+    if (!otp.success) return { success: false, message: otp.message };
 
     let sendOtp;
 
-    //check type of delivery and send the otp
-    switch (type) {
-      case "phoneNumber":
-        sendOtp = await sendSms(userDetail, messageDetails);
-        break;
-      case "email":
-        sendOtp = await sendMailNotification(
-          userDetail,
-          `Corpland ID Verification`,
-          { otp: otp.data, name: name },
-          template,
-        );
-        break;
-
-      default:
-        break;
+    try {
+      sendOtp = await this.deliverOtp({
+        type,
+        userDetail,
+        template,
+        name,
+        otp: otp.data,
+      });
+    } catch (error) {
+      console.error(`OTP delivery failed for ${userDetail}:`, error.message);
+      return { success: false, message: AuthFailure.SEND_OTP };
     }
-
-    //check delivery of message
-    console.log("sendOtp", sendOtp);
 
     if (!sendOtp) return { success: false, message: AuthFailure.SEND_OTP };
 

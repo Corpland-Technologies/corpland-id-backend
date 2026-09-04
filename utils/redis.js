@@ -6,6 +6,13 @@ let redis_uri = url.parse(config.REDIS_URL);
 
 let redis;
 
+const RESILIENCE_OPTIONS = {
+  enableOfflineQueue: false,
+  connectTimeout: 5000,
+  commandTimeout: 5000,
+  maxRetriesPerRequest: 1,
+};
+
 if (config.ENV === "HEROKU_PROD") {
   redis = new Redis({
     port: Number(redis_uri.port) + 1,
@@ -17,9 +24,10 @@ if (config.ENV === "HEROKU_PROD") {
       requestCert: true,
       agent: false,
     },
+    ...RESILIENCE_OPTIONS,
   });
 } else {
-  redis = new Redis(config.REDIS_URL);
+  redis = new Redis(config.REDIS_URL, RESILIENCE_OPTIONS);
 }
 
 class RedisClient {

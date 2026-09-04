@@ -12,7 +12,10 @@ const port = config.PORT || 5007;
 
 const startServer = () => {
   application();
-  connectToDatabase();
+
+  connectToDatabase().catch((error) => {
+    console.error("Failed to connect to the database:", error.message);
+  });
 
   //redis server
   redis.on("connect", function () {
@@ -27,10 +30,8 @@ const startServer = () => {
     console.log(`Application running on port ${port}`);
   });
 
-  // Handle unhandled promise rejections and exceptions
   process.on("unhandledRejection", (err) => {
-    console.log(err.message);
-    process.exit(1);
+    console.error("Unhandled rejection:", err?.message || err);
   });
 
   process.on("uncaughtException", (err) => {

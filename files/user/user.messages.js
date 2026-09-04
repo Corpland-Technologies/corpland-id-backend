@@ -14,6 +14,10 @@ module.exports.userMessages = {
   USER_CREATED:
     "User successfully created, check your email for verification code",
   USER_EXISTS: "User already exists",
+  EMAIL_IN_USE:
+    "This email already has an account. Log in to continue, or reset your password if you have forgotten it.",
+  EMAIL_UNVERIFIED_EXISTS:
+    "You already started signing up with this email. Log in with that password to continue where you left off.",
 
   PASSWORD_RESET_SUCCESS: "Password successfully reset",
   PASSWORD_RESET_FAILURE: "Unable to reset password",

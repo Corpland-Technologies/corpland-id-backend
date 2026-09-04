@@ -9,10 +9,12 @@ const {
   enterpriseResetPasswordController,
 } = require("./controller/sendOtp.controller");
 
+const { otpLimiter } = require("../../core/rateLimit");
+
 const authRoute = require("express").Router();
 
 //routes
-authRoute.post("/otp", sendOtpController);
+authRoute.post("/otp", otpLimiter, sendOtpController);
 authRoute.post("/reset-password", resetPasswordController);
 authRoute.post("/enterprise-reset-password", enterpriseResetPasswordController);
 authRoute.post("/merchant-reset-password", merchantResetPasswordController);
