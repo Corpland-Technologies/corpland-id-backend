@@ -12,67 +12,153 @@ const { AuthMessages } = require("../auth/auth.messages");
 const { AuthService } = require("../auth/auth.service");
 const { RedisClient } = require("../../utils/redis");
 const { SessionService } = require("../session/session.service");
+const { DuplicateError } = require("../../utils/errors");
+const {
+  DUPLICATE_KEY_CODE,
+  signUpCodes,
+  signUpSteps,
+} = require("../../constants/index");
 
 class UserService {
-  static async userSignUpService(body, res) {
-    const user = await UserRepository.fetchUser({
-      email: body.email,
-    });
+  static async establishSession(user, res) {
+    const payload = {
+      name: user.name,
+      email: user.email,
+      _id: user._id,
+    };
 
-    if (user) {
-      if (user.isDelete) {
-        return { SUCCESS: false, message: userMessages.SOFTDELETE };
-      }
-      return { SUCCESS: false, message: userMessages.USER_EXISTS };
-    }
-
-    const password = await hashPassword(body.password);
-    const signUp = await UserRepository.create({ ...body, password });
-
-    // Send verification OTP
-    const sendOtp = await AuthService.sendOtp({
-      type: "email",
-      userDetail: body.email,
-      template: "VERIFICATION",
-      name: body.name,
-    });
-
-    if (!sendOtp.success) {
-      return { SUCCESS: false, message: userMessages.USER_NOT_CREATED };
-    }
-
-    const accessToken = await tokenHandler.access({
-      name: signUp.name,
-      email: signUp.email,
-      _id: signUp._id,
-    });
-
-    const refreshToken = await tokenHandler.refreshToken({
-      name: signUp.name,
-      email: signUp.email,
-      _id: signUp._id,
-    });
+    const accessToken = await tokenHandler.access(payload);
+    const refreshToken = await tokenHandler.refreshToken(payload);
 
     await SessionService.createSession({
       body: {
         token: refreshToken,
-        userId: signUp._id,
+        userId: user._id,
       },
     });
 
     res.cookie("refreshToken", refreshToken, {
       httpOnly: true,
-      maxAge: 1000 * 60 * 60 * 24 * 365 * 10, // 10 years in milliseconds haha
+      maxAge: 1000 * 60 * 60 * 24 * 365 * 10,
       secure: process.env.NODE_ENV === "production",
       sameSite: "Strict",
     });
+
+    return accessToken;
+  }
+
+  static async resumeSignUpService(user, body, res) {
+    const passwordCheck = await verifyPassword(body.password, user.password);
+
+    if (!passwordCheck) {
+      throw new DuplicateError(
+        user.emailVerified
+          ? userMessages.EMAIL_IN_USE
+          : userMessages.EMAIL_UNVERIFIED_EXISTS,
+        409,
+        { emailVerified: user.emailVerified },
+        user.emailVerified
+          ? signUpCodes.EMAIL_IN_USE
+          : signUpCodes.EMAIL_UNVERIFIED_EXISTS,
+      );
+    }
+
+    let otpSent = false;
+
+    if (!user.emailVerified) {
+      const issuedOtp = await AuthService.issueOtp({
+        type: "email",
+        userDetail: user.email,
+        template: "VERIFICATION",
+        name: user.name,
+      });
+
+      otpSent = issuedOtp.otpSent;
+    }
+
+    const accessToken = await this.establishSession(user, res);
+
+    user.password = undefined;
+
+    return {
+      SUCCESS: true,
+      message: user.emailVerified
+        ? userMessages.USER_FOUND
+        : userMessages.USER_CREATED,
+      data: {
+        user,
+        token: accessToken,
+        nextStep: user.emailVerified
+          ? signUpSteps.COMPLETE_PROFILE
+          : signUpSteps.VERIFY_EMAIL,
+        otpSent,
+        resumed: true,
+      },
+    };
+  }
+
+  static async userSignUpService(body, res) {
+    const existingUser = await UserRepository.fetchAnyUser({
+      email: body.email,
+    });
+
+    if (existingUser) {
+      if (existingUser.isDelete) {
+        throw new DuplicateError(
+          userMessages.SOFTDELETE,
+          409,
+          undefined,
+          signUpCodes.ACCOUNT_DELETED,
+        );
+      }
+
+      return this.resumeSignUpService(existingUser, body, res);
+    }
+
+    const password = await hashPassword(body.password);
+
+    let signUp;
+
+    try {
+      signUp = await UserRepository.create({ ...body, password });
+    } catch (error) {
+      if (error?.code !== DUPLICATE_KEY_CODE) throw error;
+
+      const raced = await UserRepository.fetchAnyUser({ email: body.email });
+
+      if (!raced || raced.isDelete) {
+        throw new DuplicateError(
+          userMessages.EMAIL_IN_USE,
+          409,
+          undefined,
+          signUpCodes.EMAIL_IN_USE,
+        );
+      }
+
+      return this.resumeSignUpService(raced, body, res);
+    }
+
+    const issuedOtp = await AuthService.issueOtp({
+      type: "email",
+      userDetail: signUp.email,
+      template: "VERIFICATION",
+      name: signUp.name,
+    });
+
+    const accessToken = await this.establishSession(signUp, res);
 
     signUp.password = undefined;
 
     return {
       SUCCESS: true,
       message: userMessages.USER_CREATED,
-      data: { user: signUp, token: accessToken },
+      data: {
+        user: signUp,
+        token: accessToken,
+        nextStep: signUpSteps.VERIFY_EMAIL,
+        otpSent: issuedOtp.otpSent,
+        resumed: false,
+      },
     };
   }
 

@@ -25,14 +25,15 @@ const {
 const { checkSchema } = require("express-validator");
 const { createUser } = require("../../validations/user/user");
 const { validate } = require("../../validations/validate");
+const { credentialLimiter, otpLimiter } = require("../../core/rateLimit");
 
 userRoute
   .route("/")
-  .post(validate(checkSchema(createUser)), userSignUpController);
-userRoute.post("/login", userLogin);
-userRoute.post("/verify-email", verifyEmailController);
-userRoute.post("/forgot-password", forgotPasswordController);
-userRoute.post("/verify-reset-code", verifyResetCodeController);
+  .post(credentialLimiter, validate(checkSchema(createUser)), userSignUpController);
+userRoute.post("/login", credentialLimiter, userLogin);
+userRoute.post("/verify-email", credentialLimiter, verifyEmailController);
+userRoute.post("/forgot-password", otpLimiter, forgotPasswordController);
+userRoute.post("/verify-reset-code", credentialLimiter, verifyResetCodeController);
 userRoute.post("/reset-password", resetPasswordController);
 userRoute.post("/email", sendBulkEmailNotificationController);
 userRoute.post("/email/:id", sendSingleEmailNotificationController);

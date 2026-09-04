@@ -13,6 +13,7 @@ const { config } = require("./config");
 const app = express();
 
 const application = () => {
+  app.set("trust proxy", 1);
   app.use(bodyParser.json());
   app.use(express.json());
   app.use(express.urlencoded({ extended: false }));

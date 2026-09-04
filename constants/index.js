@@ -1,7 +1,16 @@
 module.exports = {
-    PAGE_LENGTH: 100,
-    LIMIT: 50,
-    SKIP: 0,
-    SORT: "asc",
-  }
-  
+  PAGE_LENGTH: 100,
+  LIMIT: 50,
+  SKIP: 0,
+  SORT: "asc",
+  DUPLICATE_KEY_CODE: 11000,
+  signUpCodes: {
+    EMAIL_IN_USE: "EMAIL_IN_USE",
+    EMAIL_UNVERIFIED_EXISTS: "EMAIL_UNVERIFIED_EXISTS",
+    ACCOUNT_DELETED: "ACCOUNT_DELETED",
+  },
+  signUpSteps: {
+    VERIFY_EMAIL: "VERIFY_EMAIL",
+    COMPLETE_PROFILE: "COMPLETE_PROFILE",
+  },
+}
