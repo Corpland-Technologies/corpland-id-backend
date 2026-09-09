@@ -16,4 +16,28 @@ const createUser = {
   },
 };
 
-module.exports = { createUser };
+const googleSignIn = {
+  code: {
+    optional: true,
+    isString: true,
+    errorMessage: "Authorization code must be a string",
+  },
+  idToken: {
+    optional: true,
+    isString: true,
+    errorMessage: "ID token must be a string",
+  },
+  credential: {
+    custom: {
+      options: (_, { req }) => {
+        const provided = [req.body?.code, req.body?.idToken].filter(Boolean);
+        if (provided.length !== 1) {
+          throw new Error("Provide exactly one of code or idToken");
+        }
+        return true;
+      },
+    },
+  },
+};
+
+module.exports = { createUser, googleSignIn };

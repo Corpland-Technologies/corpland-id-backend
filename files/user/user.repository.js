@@ -19,6 +19,10 @@ class UserRepository {
     return User.findOne({ ...body });
   }
 
+  static async fetchByGoogleId(googleId) {
+    return User.findOne({ googleId });
+  }
+
   static async findUserParams(userPayload, select) {
     const { limit, skip, sort, ...restOfPayload } = userPayload;
     const user = await User.find({ ...restOfPayload, isDelete: false })

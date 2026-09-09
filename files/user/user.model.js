@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const { DEFAULT_USER_IMAGE, authProviders } = require("../../constants/index");
 
 const userSchema = new mongoose.Schema(
   {
@@ -21,8 +22,29 @@ const userSchema = new mongoose.Schema(
     },
     image: {
       type: String,
-      default:
-        "https://res.cloudinary.com/drwzb6vqn/image/upload/v1728840516/corpland/e5djtacomvpbubqwxhdy.png",
+      default: DEFAULT_USER_IMAGE,
+    },
+    googleId: {
+      type: String,
+      index: true,
+      unique: true,
+      sparse: true,
+    },
+    authProvider: {
+      type: String,
+      enum: Object.values(authProviders),
+      default: authProviders.LOCAL,
+    },
+    providers: {
+      type: [{ type: String, enum: Object.values(authProviders) }],
+      default: [],
+    },
+    lastSignInProvider: {
+      type: String,
+      enum: Object.values(authProviders),
+    },
+    lastSignInAt: {
+      type: Date,
     },
     gender: {
       type: String,
