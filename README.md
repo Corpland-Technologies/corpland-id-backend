@@ -26,8 +26,16 @@ Responses
 | Email exists, unverified, password differs | 409 | `{ message, code: "EMAIL_UNVERIFIED_EXISTS", errors: { emailVerified: false } }` |
 | Email exists, verified, password differs | 409 | `{ message, code: "EMAIL_IN_USE", errors: { emailVerified: true } }` |
 | Account soft deleted | 409 | `{ message, code: "ACCOUNT_DELETED" }` |
+| Account has no password (Google account) | 400 | `{ message, code: "USE_GOOGLE_SIGN_IN", errors: { authProvider } }` |
+| Account has no password and no Google link | 400 | `{ message, code: "PASSWORD_NOT_SET", errors: { authProvider } }` |
+| Insert collided on an unexpected unique index | 400 | `{ message, code: "ACCOUNT_CREATE_FAILED", errors: { field } }` |
 | Field validation failed | 400 | `{ success: false, errors: [ { msg, path, ... } ] }` |
 | Rate limited | 429 | `{ message, code: "TOO_MANY_REQUESTS" }` |
+
+`ACCOUNT_CREATE_FAILED` means the database is not the Corpland ID store. The service only
+treats a duplicate key on `email` (or `googleId` for Google sign in) as a retry race; any other
+unique index, such as the `userId` index in the Cubbicles database, is reported as this code
+with the field name instead of being mislabelled as "email already in use".
 
 `nextStep` is `"VERIFY_EMAIL"` while `emailVerified` is false, otherwise `"COMPLETE_PROFILE"`.
 Clients should route on `nextStep`, and branch on `code` rather than on message text.
@@ -39,6 +47,59 @@ affordance rather than treat the signup as failed.
 Matching on the password is deliberate. Knowing the password proves ownership exactly as
 `POST /users/login` does, so a retry of the same form resumes the session instead of being
 rejected.
+
+## Sign in with Google
+
+`POST /api/v1/users/google` verifies a Google credential, links or creates the account, and
+issues the same access token, refresh cookie and Session row as `POST /users/login`.
+
+Request, exactly one of
+
+```json
+{ "code": "<authorization code from the web popup flow>" }
+{ "idToken": "<Google ID token from a native sign in>" }
+```
+
+Web sends `code` (Google Identity Services, popup, `redirect_uri` is `postmessage`, so the
+secret never leaves the server). Mobile sends `idToken`. The token audience must match
+`GOOGLE_CLIENT_ID`, `GOOGLE_IOS_CLIENT_ID` or `GOOGLE_ANDROID_CLIENT_ID`.
+
+Responses
+
+| Condition | Status | Body |
+|---|---|---|
+| New email | 200 | `{ SUCCESS: true, message, data: { user, token, nextStep: "COMPLETE_PROFILE", otpSent: false, resumed: false, isNewUser: true } }` |
+| Email already has an account | 200 | same shape with `resumed: true`, `isNewUser: false` |
+| Account soft deleted | 409 | `{ message, code: "ACCOUNT_DELETED" }` |
+| Credential could not be verified | 400 | `{ message, code: "GOOGLE_AUTH_FAILED" }` |
+| Insert collided on an unexpected unique index | 400 | `{ message, code: "ACCOUNT_CREATE_FAILED", errors: { field } }` |
+| Google reports the email unverified | 400 | `{ message, code: "GOOGLE_EMAIL_UNVERIFIED" }` |
+| Neither or both of `code` and `idToken` sent | 400 | `{ success: false, errors: [ { msg, path, ... } ] }` |
+| Rate limited | 429 | `{ message, code: "TOO_MANY_REQUESTS" }` |
+
+Linking rules, keyed on the lowercased email:
+
+- An account that already has this `googleId` signs in.
+- A verified password account is linked: `googleId` is set, the password is kept, and the
+  profile image is only replaced when it is still the default placeholder.
+- An unverified password account is linked, marked `emailVerified: true`, and its password is
+  removed. Whoever registered that email without proving ownership no longer has access. The
+  Google owner can set a password later through forgot password.
+- `phoneNumber`, `gender` and `dateOfBirth` are never provided by Google, so `nextStep` is
+  always `"COMPLETE_PROFILE"`.
+
+User documents gained `googleId` (unique, sparse), `authProvider` (the provider the account
+was created with, `"local"` or `"google"`), `providers` (every provider the account has ever
+signed in with), `lastSignInProvider` and `lastSignInAt`. Every signup, login, Google sign in
+and password reset keeps them current. Existing documents read `providers` as `[]` until
+`bun run backfill:providers` is run once against the Corpland ID database; it adds `"local"` to
+every account with a password and `"google"` to every account with a `googleId`, and is safe to
+repeat.
+
+Accounts without a password cannot use `POST /users` or `POST /users/login`. Both return
+400 with `code: "USE_GOOGLE_SIGN_IN"` so the client can point the user at the Google button.
+This is a 400 on purpose: the web client treats every 401 from this service as an expired
+session and retries the refresh cookie instead of showing the body.
 
 ## Verification codes
 
@@ -76,3 +137,8 @@ bun run dev
 
 Requires `.env` with `MONGO_URL`, `REDIS_URL`, `JWT_ACCESS_SECRET`, `JWT_REFRESH_SECRET`,
 `COMPANY_EMAIL`, `COMPANY_EMAIL_PASSWORD`, `FRONTEND_URL`, `PORT`.
+
+Google sign in needs `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` from the Google Cloud Web
+OAuth client. `GOOGLE_IOS_CLIENT_ID` and `GOOGLE_ANDROID_CLIENT_ID` are optional and only
+widen the accepted token audience for the mobile app. Without `GOOGLE_CLIENT_ID` the endpoint
+answers 400 `GOOGLE_AUTH_FAILED` for every request.

@@ -12,9 +12,13 @@ const { AuthMessages } = require("../auth/auth.messages");
 const { AuthService } = require("../auth/auth.service");
 const { RedisClient } = require("../../utils/redis");
 const { SessionService } = require("../session/session.service");
-const { DuplicateError } = require("../../utils/errors");
+const { DuplicateError, CustomError } = require("../../utils/errors");
+const { verifyGoogleCredential } = require("../../utils/google");
 const {
   DUPLICATE_KEY_CODE,
+  DEFAULT_USER_IMAGE,
+  authCodes,
+  authProviders,
   signUpCodes,
   signUpSteps,
 } = require("../../constants/index");
@@ -47,7 +51,67 @@ class UserService {
     return accessToken;
   }
 
+  static requirePassword(user) {
+    if (user.password) return;
+
+    if (user.googleId) {
+      throw new CustomError(
+        userMessages.USE_GOOGLE_SIGN_IN,
+        400,
+        { authProvider: user.authProvider },
+        authCodes.USE_GOOGLE_SIGN_IN
+      );
+    }
+
+    throw new CustomError(
+      userMessages.PASSWORD_NOT_SET,
+      400,
+      { authProvider: user.authProvider },
+      authCodes.PASSWORD_NOT_SET
+    );
+  }
+
+  static signInStamp(provider) {
+    return {
+      lastSignInProvider: provider,
+      lastSignInAt: new Date(),
+    };
+  }
+
+  static async recordSignIn(user, provider) {
+    const updated = await UserRepository.updateUserById(
+      { _id: user._id },
+      {
+        $addToSet: { providers: provider },
+        $set: this.signInStamp(provider),
+      }
+    );
+
+    return updated || user;
+  }
+
+  static duplicateKeyField(error) {
+    return Object.keys(error?.keyPattern || {})[0];
+  }
+
+  static assertRaceableDuplicate(error, raceableFields) {
+    if (error?.code !== DUPLICATE_KEY_CODE) throw error;
+
+    const field = this.duplicateKeyField(error);
+
+    if (field && !raceableFields.includes(field)) {
+      throw new CustomError(
+        userMessages.USER_NOT_CREATED,
+        400,
+        { field },
+        authCodes.ACCOUNT_CREATE_FAILED
+      );
+    }
+  }
+
   static async resumeSignUpService(user, body, res) {
+    this.requirePassword(user);
+
     const passwordCheck = await verifyPassword(body.password, user.password);
 
     if (!passwordCheck) {
@@ -75,6 +139,8 @@ class UserService {
 
       otpSent = issuedOtp.otpSent;
     }
+
+    user = await this.recordSignIn(user, authProviders.LOCAL);
 
     const accessToken = await this.establishSession(user, res);
 
@@ -120,9 +186,14 @@ class UserService {
     let signUp;
 
     try {
-      signUp = await UserRepository.create({ ...body, password });
+      signUp = await UserRepository.create({
+        ...body,
+        password,
+        providers: [authProviders.LOCAL],
+        ...this.signInStamp(authProviders.LOCAL),
+      });
     } catch (error) {
-      if (error?.code !== DUPLICATE_KEY_CODE) throw error;
+      this.assertRaceableDuplicate(error, ["email"]);
 
       const raced = await UserRepository.fetchAnyUser({ email: body.email });
 
@@ -162,6 +233,121 @@ class UserService {
     };
   }
 
+  static async linkGoogleAccount(user, profile) {
+    const set = {
+      googleId: profile.googleId,
+      emailVerified: true,
+      ...this.signInStamp(authProviders.GOOGLE),
+    };
+    const update = { $set: set, $addToSet: { providers: authProviders.GOOGLE } };
+
+    if (profile.picture && (!user.image || user.image === DEFAULT_USER_IMAGE)) {
+      set.image = profile.picture;
+    }
+
+    if (!user.name && profile.name) set.name = profile.name;
+
+    if (!user.emailVerified && user.password) {
+      set.authProvider = authProviders.GOOGLE;
+      update.$unset = { password: 1 };
+    }
+
+    return UserRepository.updateUserById({ _id: user._id }, update);
+  }
+
+  static async createGoogleAccount(profile) {
+    const payload = {
+      name: profile.name,
+      email: profile.email,
+      googleId: profile.googleId,
+      authProvider: authProviders.GOOGLE,
+      providers: [authProviders.GOOGLE],
+      ...this.signInStamp(authProviders.GOOGLE),
+      emailVerified: true,
+      termsAndConditions: true,
+    };
+
+    if (profile.picture) payload.image = profile.picture;
+
+    try {
+      return await UserRepository.create(payload);
+    } catch (error) {
+      this.assertRaceableDuplicate(error, ["email", "googleId"]);
+
+      const raced =
+        (await UserRepository.fetchByGoogleId(profile.googleId)) ||
+        (await UserRepository.fetchAnyUser({ email: profile.email }));
+
+      if (!raced || raced.isDelete) {
+        throw new DuplicateError(
+          userMessages.EMAIL_IN_USE,
+          409,
+          undefined,
+          signUpCodes.EMAIL_IN_USE
+        );
+      }
+
+      return raced.googleId ? raced : this.linkGoogleAccount(raced, profile);
+    }
+  }
+
+  static async googleSignInService(body, res) {
+    const profile = await verifyGoogleCredential(body);
+
+    if (!profile.emailVerified) {
+      throw new CustomError(
+        userMessages.GOOGLE_EMAIL_UNVERIFIED,
+        400,
+        undefined,
+        authCodes.GOOGLE_EMAIL_UNVERIFIED
+      );
+    }
+
+    const existingUser =
+      (await UserRepository.fetchByGoogleId(profile.googleId)) ||
+      (await UserRepository.fetchAnyUser({ email: profile.email }));
+
+    if (existingUser?.isDelete) {
+      throw new DuplicateError(
+        userMessages.SOFTDELETE,
+        409,
+        undefined,
+        signUpCodes.ACCOUNT_DELETED
+      );
+    }
+
+    const isNewUser = !existingUser;
+
+    let user;
+
+    if (isNewUser) {
+      user = await this.createGoogleAccount(profile);
+    } else if (existingUser.googleId) {
+      user = await this.recordSignIn(existingUser, authProviders.GOOGLE);
+    } else {
+      user = await this.linkGoogleAccount(existingUser, profile);
+    }
+
+    const accessToken = await this.establishSession(user, res);
+
+    user.password = undefined;
+
+    return {
+      SUCCESS: true,
+      message: isNewUser
+        ? userMessages.GOOGLE_ACCOUNT_CREATED
+        : userMessages.GOOGLE_SIGN_IN_SUCCESS,
+      data: {
+        user,
+        token: accessToken,
+        nextStep: signUpSteps.COMPLETE_PROFILE,
+        otpSent: false,
+        resumed: !isNewUser,
+        isNewUser,
+      },
+    };
+  }
+
   static async userLoginService(body, res) {
     const user = await UserRepository.fetchUser({
       email: body.email,
@@ -178,6 +364,8 @@ class UserService {
     if (user.isDelete) {
       return { SUCCESS: false, message: userMessages.SOFTDELETE };
     }
+
+    this.requirePassword(user);
 
     const passwordCheck = await verifyPassword(body.password, user.password);
 
@@ -212,11 +400,13 @@ class UserService {
       sameSite: "Strict",
     });
 
-    user.password = undefined;
+    const signedInUser = await this.recordSignIn(user, authProviders.LOCAL);
+
+    signedInUser.password = undefined;
     return {
       SUCCESS: true,
       message: userMessages.USER_FOUND,
-      data: { user, token: accessToken },
+      data: { user: signedInUser, token: accessToken },
     };
   }
 
@@ -445,9 +635,6 @@ class UserService {
 
   static async resetPasswordService(body) {
     const { email, newPassword } = body;
-    console.log("body", body);
-    console.log("email", email);
-    console.log("newPassword", newPassword);
 
     const user = await UserRepository.fetchUser({ email });
 
@@ -457,9 +644,9 @@ class UserService {
 
     const password = await hashPassword(newPassword);
 
-    const updatePassword = await UserRepository.updateUserDetails(
+    const updatePassword = await UserRepository.updateUserById(
       { email },
-      { password }
+      { $set: { password }, $addToSet: { providers: authProviders.LOCAL } }
     );
 
     if (!updatePassword) {

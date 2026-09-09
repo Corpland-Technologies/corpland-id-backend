@@ -19,6 +19,17 @@ module.exports.userMessages = {
   EMAIL_UNVERIFIED_EXISTS:
     "You already started signing up with this email. Log in with that password to continue where you left off.",
 
+  USE_GOOGLE_SIGN_IN:
+    "This account signs in with Google. Use the Google button to continue.",
+  GOOGLE_AUTH_FAILED:
+    "We could not verify your Google sign in. Please try again.",
+  GOOGLE_EMAIL_UNVERIFIED:
+    "Your Google email is not verified. Verify it with Google and try again.",
+  PASSWORD_NOT_SET:
+    "This account has no password yet. Use Forgot password to set one.",
+  GOOGLE_SIGN_IN_SUCCESS: "Signed in with Google",
+  GOOGLE_ACCOUNT_CREATED: "Account created with Google",
+
   PASSWORD_RESET_SUCCESS: "Password successfully reset",
   PASSWORD_RESET_FAILURE: "Unable to reset password",
   INCORRECT_PASSWORD: "Incorrect password",

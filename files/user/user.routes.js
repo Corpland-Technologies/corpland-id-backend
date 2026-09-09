@@ -9,6 +9,7 @@ const {
   getLoggedInUserController,
   deleteUserController,
   userSignUpController,
+  googleSignInController,
   userLogin,
   searchUserController,
   verifyEmailController,
@@ -23,13 +24,19 @@ const {
 } = require("./user.controller");
 
 const { checkSchema } = require("express-validator");
-const { createUser } = require("../../validations/user/user");
+const { createUser, googleSignIn } = require("../../validations/user/user");
 const { validate } = require("../../validations/validate");
 const { credentialLimiter, otpLimiter } = require("../../core/rateLimit");
 
 userRoute
   .route("/")
   .post(credentialLimiter, validate(checkSchema(createUser)), userSignUpController);
+userRoute.post(
+  "/google",
+  credentialLimiter,
+  validate(checkSchema(googleSignIn)),
+  googleSignInController
+);
 userRoute.post("/login", credentialLimiter, userLogin);
 userRoute.post("/verify-email", credentialLimiter, verifyEmailController);
 userRoute.post("/forgot-password", otpLimiter, forgotPasswordController);

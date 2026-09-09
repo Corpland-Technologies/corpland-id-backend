@@ -16,6 +16,18 @@ const userSignUpController = async (req, res, next) => {
   return responseHandler(res, SUCCESS, data);
 };
 
+const googleSignInController = async (req, res, next) => {
+  const [error, data] = await manageAsyncOps(
+    UserService.googleSignInService(req.body, res)
+  );
+
+  if (error) return next(error);
+
+  if (!data?.SUCCESS) return next(new CustomError(data.message, 400, data));
+
+  return responseHandler(res, SUCCESS, data);
+};
+
 const userLogin = async (req, res, next) => {
   const [error, data] = await manageAsyncOps(
     UserService.userLoginService(req.body, res)
@@ -214,6 +226,7 @@ const requestAccountDeletionController = async (req, res, next) => {
 
 module.exports = {
   userSignUpController,
+  googleSignInController,
   userLogin,
   updateUserController,
   changeUserPasswordController,
