@@ -95,7 +95,8 @@ Conventions:
 ## 7. utils
 `utils/index.js`: `tokenHandler`, `isAuthenticated`, `verifyToken`, `hashPassword` (bcryptjs), `verifyPassword`, `manageAsyncOps` ([error, data] tuple), `queryConstructor`, `fileModifier`, `AlphaNumeric`, `adminVerifier`, `sanitizePhoneNumber`, `verifyPhoneNumber`, `dateCheck`, `verifyWhoAmI`.
 `utils/errors.js`: `CustomError` (400 default), `DuplicateError` (409). Constructor `(message, statusCode, errors, code)`.
-`utils/email.js`: nodemailer SMTP (`mail.corplandtechnologies.com:465`, pooled) + handlebars templates cached in a Map. `sendMailNotification(to, subject, params, TemplateName)`.
+`utils/internalKey.js`: `requireInternalKey` middleware, constant time check of `x-internal-key` against `INTERNAL_API_KEY`; guards `POST /users/announcements`.
+`utils/email.js`: nodemailer SMTP (`mail.corplandtechnologies.com:465`, pooled) + handlebars templates cached in a Map, partials in `templates/partials/` registered once (`layout`, `code`, `button`, `details`), `firstName` helper, plain text alternative, From `Corpland <NO_REPLY_EMAIL>`, Reply-To `SUPPORT_EMAIL`, envelope sender `COMPANY_EMAIL`. `sendMailNotification(to, subject, params, TemplateName)` and `renderTemplate(name, params)`.
 `utils/sms.js`: Termii via axios (Twilio commented out).
 `utils/firebase.js`: firebase-admin FCM only, not imported anywhere, init passes `credentials` instead of `credential`. Service account JSON is committed in `utils/`.
 

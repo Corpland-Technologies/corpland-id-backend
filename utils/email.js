@@ -4,7 +4,14 @@ const path = require("path");
 const mailer = require("nodemailer");
 const { config } = require("../core/config");
 
+const TEMPLATES_DIR = path.join(__dirname, "../templates");
+const PARTIALS_DIR = path.join(TEMPLATES_DIR, "partials");
+
 handlebars.registerHelper("eq", (a, b) => a == b);
+handlebars.registerHelper(
+  "firstName",
+  (name) => String(name || "").trim().split(/\s+/)[0] || "there"
+);
 
 const SMTP_OPTIONS = {
   host: "mail.corplandtechnologies.com",
@@ -37,17 +44,67 @@ const getTransport = () => {
   return transport;
 };
 
+let partialsRegistered = false;
+
+const registerPartials = () => {
+  if (partialsRegistered) return;
+
+  for (const file of fs.readdirSync(PARTIALS_DIR)) {
+    if (!file.endsWith(".hbs")) continue;
+    handlebars.registerPartial(
+      path.basename(file, ".hbs"),
+      fs.readFileSync(path.join(PARTIALS_DIR, file), "utf8")
+    );
+  }
+
+  partialsRegistered = true;
+};
+
 const templateCache = new Map();
 
 const getTemplate = (name) => {
+  registerPartials();
+
   if (!templateCache.has(name)) {
     const source = fs.readFileSync(
-      path.join(__dirname, `../templates/${name}.hbs`),
+      path.join(TEMPLATES_DIR, `${name}.hbs`),
       "utf8"
     );
     templateCache.set(name, handlebars.compile(source));
   }
+
   return templateCache.get(name);
+};
+
+const decodeEntities = (text) =>
+  text
+    .replace(/&nbsp;|&zwnj;|&#847;/g, " ")
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"')
+    .replace(/&#x27;|&#39;/g, "'");
+
+const toPlainText = (html) =>
+  decodeEntities(
+    html
+      .replace(/<head[\s\S]*?<\/head>/i, "")
+      .replace(/<div id="preheader"[\s\S]*?<\/div>/i, "")
+      .replace(/<img[^>]*>/gi, "")
+      .replace(/<br\s*\/?>/gi, "\n")
+      .replace(/<\/(p|div|td|tr|h[1-6]|li|table)>/gi, "\n")
+      .replace(/<a\s[^>]*href="([^"]+)"[^>]*>([\s\S]*?)<\/a>/gi, "$2 ($1)")
+      .replace(/<[^>]+>/g, "")
+  )
+    .split("\n")
+    .map((line) => line.replace(/\s+/g, " ").trim())
+    .filter((line, index, lines) => line || (index > 0 && lines[index - 1]))
+    .join("\n")
+    .trim();
+
+const renderTemplate = (name, params) => {
+  const html = getTemplate(name)(params);
+  return { html, text: toPlainText(html) };
 };
 
 const sendMailNotification = async (
@@ -56,36 +113,19 @@ const sendMailNotification = async (
   substitutional_parameters,
   Template_Name
 ) => {
-  const compiledTemplate = getTemplate(Template_Name);
+  const { html, text } = renderTemplate(Template_Name, substitutional_parameters);
 
   await getTransport().sendMail({
-    from: config.COMPANY_EMAIL,
+    from: { name: config.MAIL_FROM_NAME, address: config.NO_REPLY_EMAIL },
+    replyTo: config.SUPPORT_EMAIL,
+    envelope: { from: config.COMPANY_EMAIL, to: to_email },
     to: to_email,
     subject,
-    html: compiledTemplate(substitutional_parameters),
+    html,
+    text,
   });
 
   return true;
 };
 
-const sendMultiEmailNotification = async (
-  to_emails,
-  subject,
-  substitutional_parameters,
-  Template_Names
-) => {
-  const results = await Promise.allSettled(
-    to_emails.map((to_email, index) =>
-      sendMailNotification(
-        to_email,
-        subject,
-        substitutional_parameters,
-        Template_Names[index]
-      )
-    )
-  );
-
-  return results.filter((result) => result.status === "fulfilled").length;
-};
-
-module.exports = { sendMailNotification, sendMultiEmailNotification };
+module.exports = { sendMailNotification, renderTemplate };

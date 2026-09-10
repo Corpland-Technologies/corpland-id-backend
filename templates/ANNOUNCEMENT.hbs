@@ -1,5 +1,5 @@
 {{#> layout}}
-{{#*inline "title"}}{{headline}}{{/inline}}
+{{#*inline "title"}}{{subject}}{{/inline}}
 {{#*inline "headline"}}{{headline}}{{/inline}}
 {{#*inline "preheader"}}{{preheader}}{{/inline}}
 {{#*inline "content"}}
@@ -9,6 +9,9 @@
 {{/each}}
 {{#if cta}}
 {{> button label=cta.label url=cta.url}}
+{{/if}}
+{{#if signoff}}
+<p style="margin: 24px 0 0; color: #6e6e73;">{{signoff}}</p>
 {{/if}}
 {{/inline}}
 {{/layout}}

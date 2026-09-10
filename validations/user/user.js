@@ -40,4 +40,24 @@ const googleSignIn = {
   },
 };
 
-module.exports = { createUser, googleSignIn };
+const sendAnnouncement = {
+  subject: { notEmpty: true, errorMessage: "Subject cannot be empty" },
+  headline: { notEmpty: true, errorMessage: "Headline cannot be empty" },
+  paragraphs: {
+    isArray: { options: { min: 1 }, errorMessage: "Provide at least one paragraph" },
+  },
+  "paragraphs.*": { isString: true, notEmpty: true, errorMessage: "Paragraphs must be text" },
+  preheader: { optional: true, isString: true },
+  signoff: { optional: true, isString: true },
+  "cta.label": { optional: true, isString: true, notEmpty: true },
+  "cta.url": { optional: true, isURL: { errorMessage: "CTA url must be a valid URL" } },
+  to: { optional: true, isEmail: { errorMessage: "Test recipient must be an email" } },
+  audience: {
+    optional: true,
+    isIn: { options: [["verified", "all"]], errorMessage: "Audience must be verified or all" },
+  },
+  userIds: { optional: true, isArray: true, errorMessage: "userIds must be an array" },
+  "userIds.*": { isMongoId: { errorMessage: "userIds must be Mongo ids" } },
+};
+
+module.exports = { createUser, googleSignIn, sendAnnouncement };

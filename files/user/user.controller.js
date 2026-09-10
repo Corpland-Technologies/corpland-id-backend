@@ -65,6 +65,19 @@ const sendSingleEmailNotificationController = async (req, res, next) => {
   return responseHandler(res, SUCCESS, data);
 };
 
+const sendAnnouncementController = async (req, res, next) => {
+  const [error, data] = await manageAsyncOps(
+    UserService.sendAnnouncement(req.body)
+  );
+
+  if (error) return next(error);
+
+  if (!data.SUCCESS)
+    return next(new CustomError(data.message, BAD_REQUEST, data));
+
+  return responseHandler(res, SUCCESS, data);
+};
+
 const sendBulkEmailNotificationController = async (req, res, next) => {
   const [error, data] = await manageAsyncOps(
     UserService.sendBulkEmailNotification(req.body)
@@ -243,4 +256,5 @@ module.exports = {
   requestAccountDeletionController,
   sendSingleEmailNotificationController,
   sendBulkEmailNotificationController,
+  sendAnnouncementController,
 };

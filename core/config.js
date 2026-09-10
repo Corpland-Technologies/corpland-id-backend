@@ -27,4 +27,9 @@ module.exports.config = {
   GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET,
   GOOGLE_IOS_CLIENT_ID: process.env.GOOGLE_IOS_CLIENT_ID,
   GOOGLE_ANDROID_CLIENT_ID: process.env.GOOGLE_ANDROID_CLIENT_ID,
+  INTERNAL_API_KEY: process.env.INTERNAL_API_KEY,
+  MAIL_FROM_NAME: process.env.MAIL_FROM_NAME || "Corpland",
+  NO_REPLY_EMAIL:
+    process.env.NO_REPLY_EMAIL || "no-reply@corplandtechnologies.com",
+  SUPPORT_EMAIL: process.env.SUPPORT_EMAIL || "hello@corplandtechnologies.com",
 };
