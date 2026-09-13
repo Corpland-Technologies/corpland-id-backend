@@ -10,6 +10,7 @@ const {
 const { adminMessages } = require("./admin.messages");
 const { FORBIDDEN } = require("../../constants/statusCode");
 const { sendMailNotification } = require("../../utils/email");
+const { config } = require("../../core/config");
 const { AuthMessages } = require("../auth/auth.messages");
 const { Admin } = require("./admin.model");
 
@@ -27,20 +28,22 @@ class AdminService {
     const signUp = await AdminRepository.create({ ...body, password });
 
     const substitutional_parameters = {
-      email: body.email,
       name: body.name,
-      password: body.password,
+      rows: [
+        { label: "Email", value: body.email },
+        { label: "Temporary password", value: body.password },
+      ],
+      signInUrl: `${config.FRONTEND_URL}/login`,
     };
     try {
       await sendMailNotification(
         body.email,
-        "Admin Creation",
+        "Your Corpland admin access",
         substitutional_parameters,
-        "ADMIN_CREATION",
-        true
+        "ADMIN_CREATION"
       );
     } catch (error) {
-      console.log("sendgrid error", error);
+      console.error("admin creation email failed:", error.message);
     }
 
     return {

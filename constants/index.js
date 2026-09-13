@@ -6,6 +6,10 @@ module.exports = {
   DUPLICATE_KEY_CODE: 11000,
   DEFAULT_USER_IMAGE:
     "https://res.cloudinary.com/drwzb6vqn/image/upload/v1728840516/corpland/e5djtacomvpbubqwxhdy.png",
+  announcementAudiences: {
+    VERIFIED: "verified",
+    ALL: "all",
+  },
   authProviders: {
     LOCAL: "local",
     GOOGLE: "google",

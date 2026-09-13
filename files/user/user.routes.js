@@ -21,10 +21,18 @@ const {
   getUserByIdController,
   sendSingleEmailNotificationController,
   sendBulkEmailNotificationController,
+  sendAnnouncementController,
+  sendVentureInviteController,
 } = require("./user.controller");
 
 const { checkSchema } = require("express-validator");
-const { createUser, googleSignIn } = require("../../validations/user/user");
+const {
+  createUser,
+  googleSignIn,
+  sendAnnouncement,
+  sendVentureInvite,
+} = require("../../validations/user/user");
+const { requireInternalKey } = require("../../utils/internalKey");
 const { validate } = require("../../validations/validate");
 const { credentialLimiter, otpLimiter } = require("../../core/rateLimit");
 
@@ -42,6 +50,19 @@ userRoute.post("/verify-email", credentialLimiter, verifyEmailController);
 userRoute.post("/forgot-password", otpLimiter, forgotPasswordController);
 userRoute.post("/verify-reset-code", credentialLimiter, verifyResetCodeController);
 userRoute.post("/reset-password", resetPasswordController);
+userRoute.post(
+  "/announcements",
+  requireInternalKey,
+  validate(checkSchema(sendAnnouncement)),
+  sendAnnouncementController
+);
+
+userRoute.post(
+  "/invites",
+  requireInternalKey,
+  validate(checkSchema(sendVentureInvite)),
+  sendVentureInviteController
+);
 userRoute.post("/email", sendBulkEmailNotificationController);
 userRoute.post("/email/:id", sendSingleEmailNotificationController);
 userRoute.get("/all", getAllUsersController);

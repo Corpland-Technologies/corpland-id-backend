@@ -21,6 +21,7 @@ const {
   authProviders,
   signUpCodes,
   signUpSteps,
+  announcementAudiences,
 } = require("../../constants/index");
 
 class UserService {
@@ -452,12 +453,12 @@ class UserService {
     if (!user) {
       return {
         SUCCESS: false,
-        message: userMessages.UPDATE_PROFILE_FAILURE,
+        message: userMessages.DELETION_FAILURE,
       };
     } else {
       return {
         SUCCESS: true,
-        message: userMessages.UPDATE_PROFILE_SUCCESS,
+        message: userMessages.DELETION_SUCCESS,
         user,
       };
     }
@@ -537,11 +538,11 @@ class UserService {
     });
 
     if (!deleteUser)
-      return { SUCCESS: false, message: userMessages.UPDATE_PROFILE_FAILURE };
+      return { SUCCESS: false, message: userMessages.DELETION_FAILURE };
 
     return {
       SUCCESS: true,
-      message: userMessages.UPDATE_PROFILE_SUCCESS,
+      message: userMessages.DELETION_SUCCESS,
       deleteUser,
     };
   }
@@ -707,18 +708,18 @@ class UserService {
     });
 
     if (!deleteUser) {
-      return { SUCCESS: false, message: userMessages.UPDATE_PROFILE_FAILURE };
+      return { SUCCESS: false, message: userMessages.DELETION_FAILURE };
     }
 
     await sendMailNotification(
       user.email,
-      `Account Deletion Status`,
+      "Your Corpland ID has been deleted",
       { name: user.name },
       "ACCOUNT_DELETION"
     );
     return {
       SUCCESS: true,
-      message: userMessages.UPDATE_PROFILE_SUCCESS,
+      message: userMessages.DELETION_SUCCESS,
     };
   }
 
@@ -732,7 +733,7 @@ class UserService {
     const emailNotification = await sendMailNotification(
       user.email,
       body.subject,
-      { name: user.name, body: body.body },
+      this.notificationParams(body, user),
       "NOTIFICATION"
     );
 
@@ -742,6 +743,139 @@ class UserService {
     return {
       SUCCESS: true,
       message: userMessages.EMAIL_SUCCESS,
+    };
+  }
+
+  static firstName(name) {
+    return String(name || "").trim().split(/\s+/)[0] || "there";
+  }
+
+  static notificationParams(body, user) {
+    const paragraphs = String(body.body || "")
+      .split(/\n\s*\n|\r?\n/)
+      .map((paragraph) => paragraph.trim())
+      .filter(Boolean);
+
+    return {
+      name: user?.name,
+      headline: body.headline || body.subject,
+      preheader: body.preheader || paragraphs[0] || "",
+      paragraphs,
+      cta: body.cta,
+    };
+  }
+
+  static announcementParams(body, user) {
+    return {
+      subject: body.subject,
+      preheader: body.preheader || "",
+      headline: body.headline,
+      name: user?.name,
+      paragraphs: body.paragraphs,
+      cta: body.cta,
+      signoff: body.signoff,
+    };
+  }
+
+  static async deliverAnnouncement(users, body) {
+    let sent = 0;
+    let failed = 0;
+
+    for (const user of users) {
+      try {
+        await sendMailNotification(
+          user.email,
+          body.subject,
+          this.announcementParams(body, user),
+          "ANNOUNCEMENT"
+        );
+        sent += 1;
+      } catch (error) {
+        failed += 1;
+        console.error(`announcement failed for ${user._id}:`, error.message);
+      }
+    }
+
+    console.log(`announcement complete: sent ${sent}, failed ${failed}`);
+
+    return { sent, failed };
+  }
+
+  static async sendVentureInvite(body) {
+    const expiresInDays = Number(body.expiresInDays) || 7;
+    const inviterName = body.inviterName || "A teammate";
+
+    await sendMailNotification(
+      body.to,
+      `${inviterName} invited you to ${body.ventureName} on Corpland`,
+      {
+        ventureName: body.ventureName,
+        inviterName,
+        roleLabel: body.roleLabel,
+        acceptUrl: body.acceptUrl,
+        expiresInDays,
+        rows: [
+          { label: "Venture", value: body.ventureName },
+          { label: "Your role", value: body.roleLabel },
+          { label: "Invited address", value: body.to },
+        ],
+      },
+      "INVITE"
+    );
+
+    return {
+      SUCCESS: true,
+      message: userMessages.INVITE_SENT,
+      data: { sent: 1, to: body.to },
+    };
+  }
+
+  static async sendAnnouncement(body) {
+    if (body.to) {
+      const user = await UserRepository.fetchAnyUser({ email: body.to });
+
+      await sendMailNotification(
+        body.to,
+        body.subject,
+        this.announcementParams(body, user),
+        "ANNOUNCEMENT"
+      );
+
+      return {
+        SUCCESS: true,
+        message: userMessages.ANNOUNCEMENT_SENT,
+        data: { sent: 1, to: body.to },
+      };
+    }
+
+    const query = { isDelete: false, email: { $exists: true, $ne: "" } };
+
+    if (Array.isArray(body.userIds) && body.userIds.length) {
+      query._id = {
+        $in: body.userIds.map((id) => new mongoose.Types.ObjectId(id)),
+      };
+    } else if (body.audience !== announcementAudiences.ALL) {
+      query.emailVerified = true;
+    }
+
+    const users = await UserRepository.findUserParams(
+      { ...query, limit: 0, skip: 0 },
+      "email name"
+    );
+
+    if (!users.length) {
+      return { SUCCESS: false, message: userMessages.ANNOUNCEMENT_NO_RECIPIENTS };
+    }
+
+    this.deliverAnnouncement(users, body);
+
+    return {
+      SUCCESS: true,
+      message: userMessages.ANNOUNCEMENT_QUEUED,
+      data: {
+        queued: users.length,
+        audience: body.userIds?.length ? "userIds" : body.audience || "verified",
+      },
     };
   }
 
@@ -755,7 +889,7 @@ class UserService {
       await sendMailNotification(
         user.email,
         body.subject,
-        { name: user.name, body: body.body },
+        this.notificationParams(body, user),
         "NOTIFICATION"
       );
     }

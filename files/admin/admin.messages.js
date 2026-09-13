@@ -18,7 +18,7 @@ module.exports.adminMessages = {
 
   MISSING_INPUT: "One or more missing inputs",
   INVALID_FORMAT: "Invalid format",
-  SOFTDELETE: "Admin account deleted",
+  SOFTDELETE: "Admin access removed",
   UPDATE_ERROR: "Admin update unsuccessful",
   UPDATE_SUCCESS: "Admin update successful",
 };

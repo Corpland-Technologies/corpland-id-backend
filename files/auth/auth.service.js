@@ -5,6 +5,11 @@ const { sendSms } = require("../../utils/sms");
 const { AuthFailure, AuthSuccess } = require("./auth.messages");
 const { AdminRepository } = require("../admin/admin.repository");
 
+const OTP_SUBJECTS = {
+  VERIFICATION: "Your Corpland verification code",
+  RESET_PASSWORD: "Reset your Corpland password",
+};
+
 class AuthService {
   static async createOTP(userDetail) {
     const otp = AlphaNumeric(4, "numeric");
@@ -41,7 +46,7 @@ class AuthService {
       case "email":
         return sendMailNotification(
           userDetail,
-          `Corpland ID Verification`,
+          OTP_SUBJECTS[template] || OTP_SUBJECTS.VERIFICATION,
           { otp, name },
           template,
         );
