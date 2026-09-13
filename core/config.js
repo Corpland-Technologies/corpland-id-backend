@@ -28,8 +28,11 @@ module.exports.config = {
   GOOGLE_IOS_CLIENT_ID: process.env.GOOGLE_IOS_CLIENT_ID,
   GOOGLE_ANDROID_CLIENT_ID: process.env.GOOGLE_ANDROID_CLIENT_ID,
   INTERNAL_API_KEY: process.env.INTERNAL_API_KEY,
-  MAIL_FROM_NAME: process.env.MAIL_FROM_NAME || "Corpland",
+  MAIL_FROM_NAME: process.env.MAIL_FROM_NAME || "Corpland ID",
   NO_REPLY_EMAIL:
     process.env.NO_REPLY_EMAIL || "no-reply@corplandtechnologies.com",
   SUPPORT_EMAIL: process.env.SUPPORT_EMAIL || "hello@corplandtechnologies.com",
+  NO_REPLY_EMAIL_PASSWORD: process.env.NO_REPLY_EMAIL_PASSWORD,
+  SMTP_HOST: process.env.SMTP_HOST || "mail.corplandtechnologies.com",
+  SMTP_PORT: Number(process.env.SMTP_PORT) || 587,
 };

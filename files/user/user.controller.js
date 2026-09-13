@@ -65,6 +65,19 @@ const sendSingleEmailNotificationController = async (req, res, next) => {
   return responseHandler(res, SUCCESS, data);
 };
 
+const sendVentureInviteController = async (req, res, next) => {
+  const [error, data] = await manageAsyncOps(
+    UserService.sendVentureInvite(req.body)
+  );
+
+  if (error) return next(error);
+
+  if (!data.SUCCESS)
+    return next(new CustomError(data.message, BAD_REQUEST, data));
+
+  return responseHandler(res, SUCCESS, data);
+};
+
 const sendAnnouncementController = async (req, res, next) => {
   const [error, data] = await manageAsyncOps(
     UserService.sendAnnouncement(req.body)
@@ -257,4 +270,5 @@ module.exports = {
   sendSingleEmailNotificationController,
   sendBulkEmailNotificationController,
   sendAnnouncementController,
+  sendVentureInviteController,
 };

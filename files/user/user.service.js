@@ -801,6 +801,35 @@ class UserService {
     return { sent, failed };
   }
 
+  static async sendVentureInvite(body) {
+    const expiresInDays = Number(body.expiresInDays) || 7;
+    const inviterName = body.inviterName || "A teammate";
+
+    await sendMailNotification(
+      body.to,
+      `${inviterName} invited you to ${body.ventureName} on Corpland`,
+      {
+        ventureName: body.ventureName,
+        inviterName,
+        roleLabel: body.roleLabel,
+        acceptUrl: body.acceptUrl,
+        expiresInDays,
+        rows: [
+          { label: "Venture", value: body.ventureName },
+          { label: "Your role", value: body.roleLabel },
+          { label: "Invited address", value: body.to },
+        ],
+      },
+      "INVITE"
+    );
+
+    return {
+      SUCCESS: true,
+      message: userMessages.INVITE_SENT,
+      data: { sent: 1, to: body.to },
+    };
+  }
+
   static async sendAnnouncement(body) {
     if (body.to) {
       const user = await UserRepository.fetchAnyUser({ email: body.to });

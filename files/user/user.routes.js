@@ -22,6 +22,7 @@ const {
   sendSingleEmailNotificationController,
   sendBulkEmailNotificationController,
   sendAnnouncementController,
+  sendVentureInviteController,
 } = require("./user.controller");
 
 const { checkSchema } = require("express-validator");
@@ -29,6 +30,7 @@ const {
   createUser,
   googleSignIn,
   sendAnnouncement,
+  sendVentureInvite,
 } = require("../../validations/user/user");
 const { requireInternalKey } = require("../../utils/internalKey");
 const { validate } = require("../../validations/validate");
@@ -53,6 +55,13 @@ userRoute.post(
   requireInternalKey,
   validate(checkSchema(sendAnnouncement)),
   sendAnnouncementController
+);
+
+userRoute.post(
+  "/invites",
+  requireInternalKey,
+  validate(checkSchema(sendVentureInvite)),
+  sendVentureInviteController
 );
 userRoute.post("/email", sendBulkEmailNotificationController);
 userRoute.post("/email/:id", sendSingleEmailNotificationController);

@@ -60,4 +60,22 @@ const sendAnnouncement = {
   "userIds.*": { isMongoId: { errorMessage: "userIds must be Mongo ids" } },
 };
 
-module.exports = { createUser, googleSignIn, sendAnnouncement };
+const sendVentureInvite = {
+  to: { notEmpty: true, isEmail: { errorMessage: "Recipient must be an email" } },
+  ventureName: { notEmpty: true, errorMessage: "Venture name cannot be empty" },
+  inviterName: { optional: true, isString: true },
+  roleLabel: { notEmpty: true, errorMessage: "Role cannot be empty" },
+  // require_tld is off so a local FRONTEND_URL such as http://localhost:3000
+  // passes. The url is built server side by the marketplace backend from
+  // config.FRONTEND_URL and this route is behind requireInternalKey, so it is
+  // never attacker supplied.
+  acceptUrl: {
+    isURL: {
+      options: { require_tld: false },
+      errorMessage: "Accept url must be a valid URL",
+    },
+  },
+  expiresInDays: { optional: true, isInt: { options: { min: 1, max: 60 } } },
+};
+
+module.exports = { createUser, googleSignIn, sendAnnouncement, sendVentureInvite };

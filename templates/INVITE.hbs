@@ -1,0 +1,15 @@
+{{#> layout}}
+{{#*inline "title"}}Join {{ventureName}} on Corpland{{/inline}}
+{{#*inline "headline"}}Join {{ventureName}}.{{/inline}}
+{{#*inline "preheader"}}{{inviterName}} invited you to help run {{ventureName}} on Corpland{{/inline}}
+{{#*inline "footer"}}Sent because this address was invited to a venture on Corpland.{{/inline}}
+{{#*inline "content"}}
+<p style="margin: 0 0 16px;">Hi there,</p>
+<p style="margin: 0 0 20px;">{{inviterName}} invited you to join <strong>{{ventureName}}</strong> on Corpland as {{roleLabel}}.</p>
+{{> details rows=rows}}
+<p style="margin: 0 0 8px;">Accept the invitation to get started. If you do not have a Corpland ID yet, you can create one on the way in.</p>
+{{> button label="Accept invitation" url=acceptUrl}}
+<p style="margin: 12px 0 12px; font-size: 13px; line-height: 1.6; color: #6e6e73;">This invitation expires in {{expiresInDays}} days and only works for this email address.</p>
+<p style="margin: 0; font-size: 13px; line-height: 1.6; color: #6e6e73;">If you were not expecting this, you can ignore this email and nothing will happen.</p>
+{{/inline}}
+{{/layout}}

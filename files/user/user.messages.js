@@ -1,4 +1,5 @@
 module.exports.userMessages = {
+  INVITE_SENT: "Invitation sent",
   USER_NOT_CREATED: "User could not be created",
   UNVERIFIED_EMAIL: "Please verify your email",
   EMAIL_SUCCESS: "Email sent successfully",

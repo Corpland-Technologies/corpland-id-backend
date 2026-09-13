@@ -13,13 +13,28 @@ handlebars.registerHelper(
   (name) => String(name || "").trim().split(/\s+/)[0] || "there"
 );
 
+// Transactional mail sends as the dedicated no-reply mailbox. Falling back to
+// the shared company mailbox keeps mail flowing on an instance that has not had
+// NO_REPLY_EMAIL_PASSWORD added to its environment yet.
+const usesNoReplyMailbox = Boolean(config.NO_REPLY_EMAIL_PASSWORD);
+
+const SENDER = usesNoReplyMailbox ? config.NO_REPLY_EMAIL : config.COMPANY_EMAIL;
+
+const SENDER_PASSWORD = usesNoReplyMailbox
+  ? config.NO_REPLY_EMAIL_PASSWORD
+  : config.COMPANY_EMAIL_PASSWORD;
+
+// 465 is implicit TLS, 587 upgrades through STARTTLS.
+const SMTP_PORT = usesNoReplyMailbox ? config.SMTP_PORT : 465;
+
 const SMTP_OPTIONS = {
-  host: "mail.corplandtechnologies.com",
-  port: 465,
-  secure: true,
+  host: config.SMTP_HOST,
+  port: SMTP_PORT,
+  secure: SMTP_PORT === 465,
+  requireTLS: SMTP_PORT !== 465,
   auth: {
-    user: config.COMPANY_EMAIL,
-    pass: config.COMPANY_EMAIL_PASSWORD,
+    user: SENDER,
+    pass: SENDER_PASSWORD,
   },
   pool: true,
   maxConnections: 2,
@@ -118,7 +133,7 @@ const sendMailNotification = async (
   await getTransport().sendMail({
     from: { name: config.MAIL_FROM_NAME, address: config.NO_REPLY_EMAIL },
     replyTo: config.SUPPORT_EMAIL,
-    envelope: { from: config.COMPANY_EMAIL, to: to_email },
+    envelope: { from: SENDER, to: to_email },
     to: to_email,
     subject,
     html,

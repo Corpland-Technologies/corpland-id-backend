@@ -118,3 +118,49 @@ Conventions:
 - `PUT /users/password` trusts `body.id` instead of the JWT.
 - `getLoggedInUser` dereferences the user before the null check.
 - Firebase service account key committed to the repo.
+
+## Venture invitations (2026-09-11)
+
+`POST /api/v1/users/invites`, guarded by `requireInternalKey`, sends the venture invitation email on
+behalf of corpland-backend. Body: `{ to, ventureName, inviterName, roleLabel, acceptUrl,
+expiresInDays }`, validated by `sendVentureInvite` in `validations/user/user.js`. It renders
+`templates/INVITE.hbs` through `sendMailNotification(to, subject, params, "INVITE")`.
+
+This service stores nothing about invitations. No stub user is created, which avoids the
+`PASSWORD_NOT_SET` dead end in `UserService.requirePassword` that a password-less stub would hit when
+the invited person later signs up for real. Membership lives entirely in corpland-backend, embedded in the venture document, and acceptance
+is matched on the email already carried in the JWT. The `acceptUrl` this service is handed points
+at the web page (`FRONTEND_URL/invites/<token>`), not at an API route, so it is unaffected by
+where the marketplace mounts its invite endpoints.
+
+`templates/INVITE.hbs` follows `ANNOUNCEMENT.hbs`: the shared navy `#06122e` layout, the `details`
+partial for venture, role and invited address, and the `#0064ff` `button` partial for the CTA.
+Templates are compiled once per process, so **restart the service after adding or editing one**.
+
+All four outbound calls from corpland-backend (`/users/email/:id`, `/users/email`,
+`/users/announcements`, `/users/invites`) now send `x-internal-key`. Only `/users/announcements` and
+`/users/invites` enforce it. `/users/email` and `/users/email/:id` remain open; they can be moved
+behind `requireInternalKey` now that every caller sends the header, but deploy this service after
+corpland-backend when doing so or transactional email breaks.
+
+## Outbound mail (2026-09-13)
+
+Transactional mail authenticates as the dedicated `no-reply@corplandtechnologies.com` mailbox on
+`mail.corplandtechnologies.com:587` over STARTTLS, rather than the shared company mailbox on 465.
+This takes OTPs, resets, announcements and venture invites off the company mailbox and its shared
+daily send cap.
+
+`utils/email.js` picks the mailbox from `config.NO_REPLY_EMAIL_PASSWORD`: when it is set the
+transport authenticates as `NO_REPLY_EMAIL` on `SMTP_PORT` with `requireTLS`, and when it is absent
+it falls back to `COMPANY_EMAIL` on 465 with implicit TLS. The fallback exists so an instance that
+has not had the new environment variables added yet keeps sending rather than failing every email.
+
+The SMTP envelope sender follows the authenticated mailbox, so it matches the credentials in use.
+The `From` header stays `MAIL_FROM_NAME <NO_REPLY_EMAIL>` and `Reply-To` stays `SUPPORT_EMAIL`.
+
+New environment variables: `NO_REPLY_EMAIL_PASSWORD`, `SMTP_HOST` (defaults to
+`mail.corplandtechnologies.com`), `SMTP_PORT` (defaults to 587). `NO_REPLY_EMAIL` already existed
+with the right default.
+
+To check credentials without sending anything, build the transport and call nodemailer's
+`transport.verify()`; it performs the AUTH handshake and returns.
